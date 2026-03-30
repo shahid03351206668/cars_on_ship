@@ -16,6 +16,7 @@ const queryClient = new QueryClient({
     mutations: { retry: 0 },
   },
 });
+const basename = import.meta.env.VITE_APP_ENV === 'production' ? '/cos_app' : '/';
 
 /** If already logged in, skip the landing page and go straight home */
 function RootRedirect() {
@@ -34,7 +35,7 @@ function RootRedirect() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter basename="/cos_app">
+       <BrowserRouter basename={basename}>
         <Routes>
           {/* ── Guest routes — wrapped in AppLayout (header + outlet) ── */}
           <Route element={<AppLayout />}>

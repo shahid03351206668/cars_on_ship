@@ -218,6 +218,11 @@ app_license = "MIT"
 
 
 website_route_rules = [
+    # Dev Route (Points to cos.html)
     {"from_route": "/cos/<path:app_path>", "to_route": "cos"},
     {"from_route": "/cos", "to_route": "cos"},
+
+    # Production Route (Points to cos_app.html)
+    {"from_route": "/cos_app/<path:app_path>", "to_route": "cos_app"},
+    {"from_route": "/cos_app", "to_route": "cos_app"},
 ]
