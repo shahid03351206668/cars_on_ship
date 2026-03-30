@@ -34,7 +34,7 @@ function RootRedirect() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <BrowserRouter basename="/cos_app">
         <Routes>
           {/* ── Guest routes — wrapped in AppLayout (header + outlet) ── */}
           <Route element={<AppLayout />}>
