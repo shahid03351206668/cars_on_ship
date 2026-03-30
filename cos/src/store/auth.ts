@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist, type PersistOptions } from "zustand/middleware";
+import { persist } from "zustand/middleware";
 import type { AuthUser } from "../api/auth";
 
 // ─── State Interface ──────────────────────────────────────────
@@ -31,10 +31,10 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "cos-auth", // key in localStorage
-      partialize: (state: AuthState) => ({
+      partialize: (state): Partial<AuthState> => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
-    } as PersistOptions<AuthState>
+    }
   )
 );
