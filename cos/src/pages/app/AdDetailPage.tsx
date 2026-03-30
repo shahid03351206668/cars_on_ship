@@ -46,6 +46,7 @@ function GalleryModal({
     </div>
   )
 }
+
 // ── Image Gallery ──────────────────────────────────────────────
 function ImageGallery({ images, onBack }: { images: string[]; onBack: () => void }) {
   const [active, setActive] = useState(0)
@@ -65,19 +66,14 @@ function ImageGallery({ images, onBack }: { images: string[]; onBack: () => void
           onPrev={prev} onNext={next}
         />
       )}
-      
-      <div className="w-full min-h-[700px] relative overflow-hidden font-sans">
-        {/* 🖼️ Background Layers */}
-        <div
-          className="absolute inset-0 bg-center bg-cover w-full min-h-[700px] "
-          style={{ backgroundImage: "url('/hero-bg.png')" }}
-        />
-        <div className="absolute inset-0 bg-black/50 " />
 
-        <div className="px-4 mx-auto max-w-7xl relative z-10">
-          {/* Top bar */}
-          <div className="flex items-center justify-between py-32">
-            <button onClick={onBack} className="flex items-center gap-1.5 text-xs text-white hover:text-gray-400 transition-colors">
+      {/* Dark full-width band */}
+      <div className="w-full bg-[#1a1a1c]">
+        <div className="px-4 mx-auto max-w-7xl">
+
+          {/* Top bar: back + buttons — NO separate white div */}
+          <div className="flex items-center justify-between py-3">
+            <button onClick={onBack} className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors">
               <ArrowLeft className="w-3.5 h-3.5" />
               Back to result
             </button>
@@ -92,18 +88,29 @@ function ImageGallery({ images, onBack }: { images: string[]; onBack: () => void
             </div>
           </div>
 
-          {/* Fixed-height image grid */}
-          <div className="relative overflow-hidden rounded-lg shadow-2xl" style={{ height: "340px" }}>
+          {/* Fixed-height image grid — NEVER stretches */}
+          <div className="relative overflow-hidden rounded-lg" style={{ height: "340px" }}>
             {imgs.length === 1 ? (
+              /* Single image: centered, contained, black bg sides */
               <div className="w-full h-full bg-[#111] flex items-center justify-center">
                 <img src={imgs[0]} alt="" className="object-contain max-w-full max-h-full" />
               </div>
             ) : (
+              /* Multi-image: large left + 2×2 right grid */
               <div className="flex h-full gap-1">
-                <div className="relative overflow-hidden rounded-l-lg cursor-pointer flex-[0_0_55%]">
-                  <img src={imgs[active]} alt="" className="object-cover w-full h-full" />
+                {/* Main image — 55% width */}
+                <div
+                  className="relative overflow-hidden rounded-l-lg cursor-pointer"
+                  style={{ flex: "0 0 55%" }}
+                >
+                  <img
+                    src={imgs[active]}
+                    alt=""
+                    className="object-cover w-full h-full"
+                  />
                 </div>
 
+                {/* Right 2×2 */}
                 <div className="grid flex-1 grid-cols-2 grid-rows-2 gap-1">
                   {[1, 2, 3, 4].map((offset) => {
                     const img = imgs[offset]
@@ -130,6 +137,7 @@ function ImageGallery({ images, onBack }: { images: string[]; onBack: () => void
               </div>
             )}
 
+            {/* Arrows — multi-image only */}
             {imgs.length > 1 && (
               <>
                 <button onClick={prev} className="absolute z-10 flex items-center justify-center w-8 h-8 text-white transition-colors -translate-y-1/2 rounded-full left-2 top-1/2 bg-black/50 hover:bg-black/70">
@@ -141,12 +149,14 @@ function ImageGallery({ images, onBack }: { images: string[]; onBack: () => void
               </>
             )}
           </div>
-          <div className="h-8" />
+
+          <div className="h-4" />
         </div>
       </div>
     </>
   )
 }
+
 // ── Make Offer Form ────────────────────────────────────────────
 function MakeOfferForm() {
   const [price, setPrice] = useState("")
@@ -390,20 +400,20 @@ export default function AdDetailPage() {
               <h2 className="text-base font-bold text-[#212123] mb-4 font-['Barlow_Condensed',sans-serif] uppercase tracking-wide">
                 Overview
               </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4">
-                <OverviewItem icon={<Gauge className="w-4 h-4" />}     label="Mileage"      value={ad.mileage ? `${ad.mileage.toLocaleString()} km` : "0 km"} highlight />
-                <OverviewItem icon={<Calendar className="w-4 h-4" />}  label="Year"         value={String(ad.year)} />
-                <OverviewItem icon={<Zap className="w-4 h-4" />}       label="Fuel Type"    value={ad.fuel_type} />
-                <OverviewItem icon={<Car className="w-4 h-4" />}       label="Body Type"    value={ad.body_type} />
-                <OverviewItem icon={<Settings2 className="w-4 h-4" />} label="Gearbox"      value={ad.gearbox} />
-                <OverviewItem icon={<Wind className="w-4 h-4" />}      label="Drive Type"   value={ad.drive_type} />
-                <OverviewItem icon={<DoorOpen className="w-4 h-4" />}  label="Doors"        value={ad.doors} />
-                <OverviewItem icon={<Users className="w-4 h-4" />}     label="Seats"        value={ad.seats} />
-                <OverviewItem icon={<Shield className="w-4 h-4" />}    label="Body Colour"  value={ad.colour} />
-                <OverviewItem icon={<Zap className="w-4 h-4" />}       label="Acceleration" value={ad.acceleration} />
-                <OverviewItem icon={<Car className="w-4 h-4" />}       label="Boot Space"   value={ad.boot_space} />
-                <OverviewItem icon={<MapPin className="w-4 h-4" />}    label="Seller Type"  value={ad.seller_type} />
-              </div>
+           <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4">
+              <OverviewItem icon={<Gauge className="w-4 h-4" />}     label="Mileage"      value={ad.mileage ? `${ad.mileage.toLocaleString()} km` : "N/A"} highlight />
+              <OverviewItem icon={<Calendar className="w-4 h-4" />}  label="Year"         value={ad.year ? String(ad.year) : "N/A"} />
+              <OverviewItem icon={<Zap className="w-4 h-4" />}       label="Fuel Type"    value={ad.fuel_type || "N/A"} />
+              <OverviewItem icon={<Car className="w-4 h-4" />}       label="Body Type"    value={ad.body_type || "N/A"} />
+              <OverviewItem icon={<Settings2 className="w-4 h-4" />} label="Gearbox"      value={ad.gearbox || "N/A"} />
+              <OverviewItem icon={<Wind className="w-4 h-4" />}      label="Drive Type"   value={ad.drive_type || "N/A"} />
+              <OverviewItem icon={<DoorOpen className="w-4 h-4" />}  label="Doors"        value={ad.doors || "N/A"} />
+              <OverviewItem icon={<Users className="w-4 h-4" />}     label="Seats"        value={ad.seats || "N/A"} />
+              <OverviewItem icon={<Shield className="w-4 h-4" />}    label="Body Colour"  value={ad.colour || "N/A"} />
+              <OverviewItem icon={<Zap className="w-4 h-4" />}       label="Acceleration" value={ad.acceleration || "N/A"} />
+              <OverviewItem icon={<Car className="w-4 h-4" />}       label="Boot Space"   value={ad.boot_space || "N/A"} />
+              <OverviewItem icon={<MapPin className="w-4 h-4" />}    label="Seller Type"  value={ad.seller_type || "N/A"} />
+            </div>
             </div>
 
             {/* Description */}

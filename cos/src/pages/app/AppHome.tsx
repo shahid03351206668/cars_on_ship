@@ -14,28 +14,14 @@ import {
   MessageCircle,
   Clock,
   ChevronUp,
-  LayoutGrid,
 } from "lucide-react";
 import { getRecentlyViewed, type RecentCar } from "@/lib/recentlyViewed"
 import { addToRecentlyViewed } from "@/lib/recentlyViewed"
 import { useAds,useMakes, useModels, useYears } from "@/hooks/useVehicles";
 import type {Ad , Make, Model, Year } from "@/api/vehicles";
 import AdvancedSearchPanel, { type AdvancedFilters } from "@/components/AdvancedSearchPanel"
-
-// import { useState, useEffect, useRef } from "react";
-
 // ─── Types ───────────────────────────────────────────────────
-interface Car {
-  id: number;
-  brand: string;
-  model: string;
-  year: number;
-  mileage: string;
-  grade: string;
-  price: number;
-  image: string;
-  tag: string;
-}
+
 interface HeroSectionProps {
   onFiltersApplied: (filters: AdvancedFilters) => void
 }
@@ -43,23 +29,6 @@ interface CarsSectionProps {
   filters?: Partial<AdvancedFilters>
 }
 
-
-const filterTabs = ["Make and model", "Price", "Year", "Mileage", "Gear box", "Body type"];
-const makes = ["Select Make", "Toyota", "Audi", "BMW", "Mercedes", "Lexus", "Honda"];
-const models = ["Select Model", "Sedan", "SUV", "Coupe", "Hatchback", "Wagon"];
-const years = ["Select Year", "2024", "2023", "2022", "2021", "2020", "2019"];
-
-// ─── Reusable Select ─────────────────────────────────────────
-const SimpleSelect = ({ options }: { options: string[] }) => (
-  <div className="relative">
-    <select className="appearance-none w-full bg-white border border-gray-200 text-gray-700 text-sm rounded px-3 py-2.5 pr-8 focus:outline-none focus:border-[#FC7844] cursor-pointer">
-      {options.map((o) => (
-        <option key={o}>{o}</option>
-      ))}
-    </select>
-    <ChevronDown className="absolute w-4 h-4 text-gray-400 -translate-y-1/2 pointer-events-none right-2 top-1/2" />
-  </div>
-);
 
 // ─── Japan Clock ─────────────────────────────────────────────
 const JapanClock = () => {
@@ -90,387 +59,166 @@ const JapanClock = () => {
     </span>
   );
 };
-const AdvanceFilterAccordion = ({ title, children, defaultOpen = false }: any) => {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-  return (
-    <div className="mb-3 overflow-hidden bg-white border border-gray-100 rounded-lg shadow-sm">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full px-5 py-4 text-left"
-      >
-        <span className="text-sm font-bold text-gray-800">{title}</span>
-        {isOpen ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
-      </button>
-      <div className={`transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[1000px] p-5 border-t border-gray-50 opacity-100' : 'max-h-0 opacity-0'}`}>
-        {children}
-      </div>
-    </div>
-  );
-};
-const FilterSection = ({ 
-  title, 
-  selectionText, 
-  children, 
-  defaultOpen = false 
-}: { 
-  title: string; 
-  selectionText?: string; 
-  children: React.ReactNode; 
-  defaultOpen?: boolean;
-}) => {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-
-  return (
-    <div className="border-b border-gray-100 last:border-0">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full py-4 text-left transition-colors group"
-      >
-        <div className="flex flex-col">
-          <span className="text-sm font-bold text-gray-800 group-hover:text-[#FC7844]">{title}</span>
-          {!isOpen && selectionText && (
-            <span className="text-[11px] text-gray-400 font-medium">{selectionText}</span>
-          )}
-        </div>
-        {isOpen ? (
-          <ChevronUp className="w-4 h-4 text-gray-400" />
-        ) : (
-          <ChevronDown className="w-4 h-4 text-gray-400" />
-        )}
-      </button>
-      
-      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
-        isOpen ? 'max-h-[1000px] pb-6 opacity-100' : 'max-h-0 opacity-0'
-      }`}>
-        {children}
-      </div>
-    </div>
-  );
-};
 
 
-// export const HeroSection = ({ onFiltersApplied }: HeroSectionProps) => {
 
-//   const [selectedMake, setSelectedMake] = useState("")
-//   const [selectedModel, setSelectedModel] = useState("")
-//   const [selectedYear, setSelectedYear] = useState("")
-//   const [advancedOpen, setAdvancedOpen] = useState(false)
-//   const panelRef = useRef<HTMLDivElement>(null)
- 
-//   const { data: makes, isLoading: makesLoading } = useMakes()
-//   const { data: models, isLoading: modelsLoading } = useModels(selectedMake)
-//   const { data: years, isLoading: yearsLoading } = useYears()
- 
-//   const handleAdvancedSearch = (filters: AdvancedFilters) => {
-//     console.log("Advanced filters applied:", filters)
-//     // TODO: pass filters up to CarsSection via prop/context/store
-//     onFiltersApplied(filters)  
-//     setAdvancedOpen(false)
-//   }
- 
-//   // Close panel on outside click
-//   useEffect(() => {
-//     if (!advancedOpen) return
-//     const handler = (e: MouseEvent) => {
-//       if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
-//         setAdvancedOpen(false)
-//       }
-//     }
-//     document.addEventListener("mousedown", handler)
-//     return () => document.removeEventListener("mousedown", handler)
-//   }, [advancedOpen])
- 
-//   return (
-//     <section className="relative min-h-[540px] bg-[#212123] overflow-hidden flex flex-col">
-//       <div
-//         className="absolute inset-0 bg-center bg-cover opacity-30"
-//         style={{ backgroundImage: "url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1400&q=80')" }}
-//       />
-//       <div className="absolute inset-0 bg-gradient-to-r from-[#212123]/90 via-[#212123]/60 to-transparent" />
- 
-//       {/* Hero Content */}
-//       <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-4 pt-16 pb-8 text-center">
-//         <h1 className="text-white text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight max-w-3xl font-['Barlow_Condensed',sans-serif] uppercase">
-//           World's first platform showing{" "}
-//           <span className="text-[#FC7844]">cars already on the ship</span>
-//         </h1>
-//         <p className="max-w-xl mt-4 text-base leading-relaxed text-gray-300 md:text-lg">
-//           You can request your preferred car, and we will help you source it as quickly as possible.
-//         </p>
-//         <button className="mt-8 inline-flex items-center gap-2 bg-[#FC7844] hover:bg-[#e86a35] text-white font-semibold px-6 py-3 rounded transition-colors duration-200 text-sm">
-//           Request a Car
-//           <ArrowRight className="w-4 h-4" />
-//         </button>
-//       </div>
- 
-//       {/* Search Bar */}
-//       <div className="relative z-10 w-full max-w-4xl px-4 pb-6 mx-auto">
-//         <div className="p-5 bg-white shadow-2xl rounded-xl">
-//           <div className="flex items-center justify-between mb-4">
-//             <span className="text-sm font-semibold text-[#212123]">Search Your Vehicle</span>
-//             <button
-//               onClick={() => setAdvancedOpen(!advancedOpen)}
-//               className="flex items-center gap-1 text-xs text-[#FC7844] hover:underline font-medium"
-//             >
-//               Advance Search
-//               {advancedOpen
-//                 ? <ChevronUp className="w-3.5 h-3.5" />
-//                 : <ChevronDown className="w-3.5 h-3.5" />}
-//             </button>
-//           </div>
- 
-//           {/* Quick search row */}
-//           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-//             {/* Make */}
-//             <div>
-//               <label className="block mb-1 text-xs font-medium tracking-wide text-gray-400 uppercase">Make</label>
-//               <div className="relative">
-//                 <select
-//                   value={selectedMake}
-//                   onChange={(e) => { setSelectedMake(e.target.value); setSelectedModel("") }}
-//                   className="appearance-none w-full bg-white border border-gray-200 text-gray-700 text-sm rounded px-3 py-2.5 pr-8 focus:outline-none focus:border-[#FC7844] cursor-pointer"
-//                 >
-//                   <option value="">Select Make</option>
-//                   {makesLoading
-//                     ? <option disabled>Loading...</option>
-//                     : makes?.map((m: Make) => <option key={m.name} value={m.name}>{m.name}</option>)}
-//                 </select>
-//                 <ChevronDown className="absolute w-4 h-4 text-gray-400 -translate-y-1/2 pointer-events-none right-2 top-1/2" />
-//               </div>
-//             </div>
- 
-//             {/* Model */}
-//             <div>
-//               <label className="block mb-1 text-xs font-medium tracking-wide text-gray-400 uppercase">Model</label>
-//               <div className="relative">
-//                 <select
-//                   value={selectedModel}
-//                   onChange={(e) => setSelectedModel(e.target.value)}
-//                   disabled={!selectedMake}
-//                   className="appearance-none w-full bg-white border border-gray-200 text-gray-700 text-sm rounded px-3 py-2.5 pr-8 focus:outline-none focus:border-[#FC7844] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-//                 >
-//                   <option value="">{!selectedMake ? "Select Make first" : "Select Model"}</option>
-//                   {modelsLoading
-//                     ? <option disabled>Loading...</option>
-//                     : models?.map((m: Model) => <option key={m.name} value={m.name}>{m.name}</option>)}
-//                 </select>
-//                 <ChevronDown className="absolute w-4 h-4 text-gray-400 -translate-y-1/2 pointer-events-none right-2 top-1/2" />
-//               </div>
-//             </div>
- 
-//             {/* Year */}
-//             <div>
-//               <label className="block mb-1 text-xs font-medium tracking-wide text-gray-400 uppercase">Year</label>
-//               <div className="relative">
-//                 <select
-//                   value={selectedYear}
-//                   onChange={(e) => setSelectedYear(e.target.value)}
-//                   className="appearance-none w-full bg-white border border-gray-200 text-gray-700 text-sm rounded px-3 py-2.5 pr-8 focus:outline-none focus:border-[#FC7844] cursor-pointer"
-//                 >
-//                   <option value="">Select Year</option>
-//                   {yearsLoading
-//                     ? <option disabled>Loading...</option>
-//                     : years?.map((y: Year) => <option key={y.name} value={y.year}>{y.year}</option>)}
-//                 </select>
-//                 <ChevronDown className="absolute w-4 h-4 text-gray-400 -translate-y-1/2 pointer-events-none right-2 top-1/2" />
-//               </div>
-//             </div>
-//           </div>
- 
-//           <div className="flex justify-end mt-4">
-//             <button className="flex items-center gap-2 bg-[#FC7844] hover:bg-[#e86a35] text-white font-semibold px-6 py-2.5 rounded text-sm transition-colors duration-200">
-//               <Search className="w-4 h-4" />
-//               Search
-//             </button>
-//           </div>
-//         </div>
- 
-//         {/* Advanced Search Panel — slides in below the search card */}
-//         {advancedOpen && (
-//           <div ref={panelRef} className="mt-2 duration-200 animate-in fade-in slide-in-from-top-2">
-//             <AdvancedSearchPanel
-//               onSearch={handleAdvancedSearch}
-//               onClose={() => setAdvancedOpen(false)}
-//             />
-//           </div>
-//         )}
-//       </div>
- 
-//       {/* Bottom bar */}
-//       <div className="relative z-10 bg-[#1a1a1c]/80 border-t border-white/10">
-//         <div className="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
-//           <JapanClock />
-//           <div className="flex items-center gap-4">
-//             <a href="tel:+0123456789" className="flex items-center gap-1.5 text-gray-300 hover:text-white transition-colors">
-//               <Phone className="w-3.5 h-3.5 text-[#FC7844]" />
-//               Call: 0123456789
-//             </a>
-//             <a href="#" className="flex items-center gap-1.5 text-gray-300 hover:text-white transition-colors">
-//               <MessageCircle className="w-3.5 h-3.5 text-[#FC7844]" />
-//               Whatsapp: 0123456789
-//             </a>
-//           </div>
-//         </div>
-//       </div>
-//     </section>
-//   )
-// }
+export const HeroSection = ({ onFiltersApplied }: HeroSectionProps) => {
 
-// ─── How To Buy Section ───────────────────────────────────────
-
-export const HeroSection = ({ onFiltersApplied }: { onFiltersApplied: (filters: AdvancedFilters) => void }) => {
-
-  // ─── 1. ORIGINAL DYNAMIC LOGIC (UNTOUCHED) ───────────────────
-  const [selectedMake, setSelectedMake] = useState("");
-  const [selectedModel, setSelectedModel] = useState("");
-  const [selectedYear, setSelectedYear] = useState("");
-  const [advancedOpen, setAdvancedOpen] = useState(false);
-  const panelRef = useRef<HTMLDivElement>(null);
+  const [selectedMake, setSelectedMake] = useState("")
+  const [selectedModel, setSelectedModel] = useState("")
+  const [selectedYear, setSelectedYear] = useState("")
+  const [advancedOpen, setAdvancedOpen] = useState(false)
+  const panelRef = useRef<HTMLDivElement>(null)
  
-  const { data: makes, isLoading: makesLoading } = useMakes();
-  const { data: models, isLoading: modelsLoading } = useModels(selectedMake);
-  const { data: years, isLoading: yearsLoading } = useYears();
+  const { data: makes, isLoading: makesLoading } = useMakes()
+  const { data: models, isLoading: modelsLoading } = useModels(selectedMake)
+  const { data: years, isLoading: yearsLoading } = useYears()
  
   const handleAdvancedSearch = (filters: AdvancedFilters) => {
-    onFiltersApplied(filters);  
-    setAdvancedOpen(false);
-  };
+    console.log("Advanced filters applied:", filters)
+    // TODO: pass filters up to CarsSection via prop/context/store
+    onFiltersApplied(filters)  
+    setAdvancedOpen(false)
+  }
  
+  // Close panel on outside click
   useEffect(() => {
-    if (!advancedOpen) return;
+    if (!advancedOpen) return
     const handler = (e: MouseEvent) => {
       if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
-        setAdvancedOpen(false);
+        setAdvancedOpen(false)
       }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [advancedOpen]);
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [advancedOpen])
  
-  // ─── 2. NEW UI RENDERING ─────────────────────────────────────
   return (
-    <section className="relative min-h-[962px] bg-[#212123] overflow-hidden flex flex-col justify-between">
-      {/* Background Image & Overlay */}
+    <section className="relative min-h-[540px] bg-[#212123] overflow-hidden flex flex-col">
       <div
-        className="absolute inset-0 bg-center bg-cover"
-        style={{ backgroundImage: "url('/hero-bg.png')" }}
+        className="absolute inset-0 bg-center bg-cover opacity-30"
+        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1400&q=80')" }}
       />
-      <div className="absolute inset-0 bg-black/50 z-0" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#212123]/90 via-[#212123]/60 to-transparent" />
  
       {/* Hero Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-4 pt-24 pb-12 text-center">
-        <h1 className="text-white text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight max-w-4xl uppercase">
+      <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-4 pt-16 pb-8 text-center">
+        <h1 className="text-white text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight max-w-3xl font-['Barlow_Condensed',sans-serif] uppercase">
           World's first platform showing{" "}
           <span className="text-[#FC7844]">cars already on the ship</span>
         </h1>
-        <p className="max-w-xl mt-4 text-sm md:text-base leading-relaxed text-gray-300">
+        <p className="max-w-xl mt-4 text-base leading-relaxed text-gray-300 md:text-lg">
           You can request your preferred car, and we will help you source it as quickly as possible.
         </p>
-
-        {/* Split-Pill Button */}
-        <button className="mt-8 flex items-center bg-[#1a1a1a] border border-neutral-700/50 rounded-full h-11 overflow-hidden shadow-lg transition-transform hover:scale-105 group">
-          <span className="text-white text-xs font-semibold px-6">
-            Request a Car
-          </span>
-          <span className="bg-[#FC7844] h-full flex items-center justify-center px-4 group-hover:bg-[#e86a35] transition-colors">
-            <ArrowRight className="w-4 h-4 text-white" />
-          </span>
+        <button className="mt-8 inline-flex items-center gap-2 bg-[#FC7844] hover:bg-[#e86a35] text-white font-semibold px-6 py-3 rounded transition-colors duration-200 text-sm">
+          Request a Car
+          <ArrowRight className="w-4 h-4" />
         </button>
       </div>
  
-      {/* Search Bar Area */}
-      <div className="relative z-10 w-full max-w-5xl px-4 pb-8 mx-auto">
-        <div className="p-6 md:p-8 bg-[#141416]/90 backdrop-blur-md rounded-2xl shadow-2xl border border-white/5">
-          <div className="flex items-center justify-between mb-5">
-            <span className="text-lg font-semibold text-white tracking-wide">Search Your Vehicle</span>
+      {/* Search Bar */}
+      <div className="relative z-10 w-full max-w-4xl px-4 pb-6 mx-auto">
+        <div className="p-5 bg-white shadow-2xl rounded-xl">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm font-semibold text-[#212123]">Search Your Vehicle</span>
             <button
               onClick={() => setAdvancedOpen(!advancedOpen)}
-              className="flex items-center gap-1 text-xs text-gray-400 hover:text-white transition-colors font-medium"
+              className="flex items-center gap-1 text-xs text-[#FC7844] hover:underline font-medium"
             >
               Advance Search
-              {advancedOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              {advancedOpen
+                ? <ChevronUp className="w-3.5 h-3.5" />
+                : <ChevronDown className="w-3.5 h-3.5" />}
             </button>
           </div>
  
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-4 items-end">
+          {/* Quick search row */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             {/* Make */}
             <div>
-              <label className="block mb-1.5 text-xs font-medium text-white/70">Make</label>
+              <label className="block mb-1 text-xs font-medium tracking-wide text-gray-400 uppercase">Make</label>
               <div className="relative">
                 <select
                   value={selectedMake}
                   onChange={(e) => { setSelectedMake(e.target.value); setSelectedModel("") }}
-                  className="appearance-none w-full bg-[#EAEAEA] text-gray-800 text-sm rounded-lg h-11 px-3 pr-8 focus:outline-none focus:ring-2 focus:ring-[#FC7844] cursor-pointer"
+                  className="appearance-none w-full bg-white border border-gray-200 text-gray-700 text-sm rounded px-3 py-2.5 pr-8 focus:outline-none focus:border-[#FC7844] cursor-pointer"
                 >
                   <option value="">Select Make</option>
-                  {makesLoading ? <option disabled>Loading...</option> : makes?.map((m: Make) => <option key={m.name} value={m.name}>{m.name}</option>)}
+                  {makesLoading
+                    ? <option disabled>Loading...</option>
+                    : makes?.map((m: Make) => <option key={m.name} value={m.name}>{m.name}</option>)}
                 </select>
-                <ChevronDown className="absolute w-4 h-4 text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2" />
+                <ChevronDown className="absolute w-4 h-4 text-gray-400 -translate-y-1/2 pointer-events-none right-2 top-1/2" />
               </div>
             </div>
  
             {/* Model */}
             <div>
-              <label className="block mb-1.5 text-xs font-medium text-white/70">Model</label>
+              <label className="block mb-1 text-xs font-medium tracking-wide text-gray-400 uppercase">Model</label>
               <div className="relative">
                 <select
                   value={selectedModel}
                   onChange={(e) => setSelectedModel(e.target.value)}
                   disabled={!selectedMake}
-                  className="appearance-none w-full bg-[#EAEAEA] text-gray-800 text-sm rounded-lg h-11 px-3 pr-8 focus:outline-none focus:ring-2 focus:ring-[#FC7844] cursor-pointer disabled:opacity-50"
+                  className="appearance-none w-full bg-white border border-gray-200 text-gray-700 text-sm rounded px-3 py-2.5 pr-8 focus:outline-none focus:border-[#FC7844] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <option value="">{!selectedMake ? "Select Make first" : "Select Model"}</option>
-                  {modelsLoading ? <option disabled>Loading...</option> : models?.map((m: Model) => <option key={m.name} value={m.name}>{m.name}</option>)}
+                  {modelsLoading
+                    ? <option disabled>Loading...</option>
+                    : models?.map((m: Model) => <option key={m.name} value={m.name}>{m.name}</option>)}
                 </select>
-                <ChevronDown className="absolute w-4 h-4 text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2" />
+                <ChevronDown className="absolute w-4 h-4 text-gray-400 -translate-y-1/2 pointer-events-none right-2 top-1/2" />
               </div>
             </div>
  
             {/* Year */}
             <div>
-              <label className="block mb-1.5 text-xs font-medium text-white/70">Year</label>
+              <label className="block mb-1 text-xs font-medium tracking-wide text-gray-400 uppercase">Year</label>
               <div className="relative">
                 <select
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(e.target.value)}
-                  className="appearance-none w-full bg-[#EAEAEA] text-gray-800 text-sm rounded-lg h-11 px-3 pr-8 focus:outline-none focus:ring-2 focus:ring-[#FC7844] cursor-pointer"
+                  className="appearance-none w-full bg-white border border-gray-200 text-gray-700 text-sm rounded px-3 py-2.5 pr-8 focus:outline-none focus:border-[#FC7844] cursor-pointer"
                 >
                   <option value="">Select Year</option>
-                  {yearsLoading ? <option disabled>Loading...</option> : years?.map((y: Year) => <option key={y.name} value={y.year}>{y.year}</option>)}
+                  {yearsLoading
+                    ? <option disabled>Loading...</option>
+                    : years?.map((y: Year) => <option key={y.name} value={y.year}>{y.year}</option>)}
                 </select>
-                <ChevronDown className="absolute w-4 h-4 text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2" />
+                <ChevronDown className="absolute w-4 h-4 text-gray-400 -translate-y-1/2 pointer-events-none right-2 top-1/2" />
               </div>
             </div>
-
-            <button className="h-11 bg-[#FC7844] hover:bg-[#e86a35] text-white font-semibold rounded-lg flex items-center justify-center gap-2 text-sm transition-all duration-200 active:scale-95">
+          </div>
+ 
+          <div className="flex justify-end mt-4">
+            <button className="flex items-center gap-2 bg-[#FC7844] hover:bg-[#e86a35] text-white font-semibold px-6 py-2.5 rounded text-sm transition-colors duration-200">
               <Search className="w-4 h-4" />
               Search
             </button>
           </div>
         </div>
  
+        {/* Advanced Search Panel — slides in below the search card */}
         {advancedOpen && (
           <div ref={panelRef} className="mt-2 duration-200 animate-in fade-in slide-in-from-top-2">
-            <AdvancedSearchPanel onSearch={handleAdvancedSearch} onClose={() => setAdvancedOpen(false)} />
+            <AdvancedSearchPanel
+              onSearch={handleAdvancedSearch}
+              onClose={() => setAdvancedOpen(false)}
+            />
           </div>
         )}
       </div>
  
-      {/* Footer Info Bar */}
-      <div className="relative z-10 bg-[#141416]/80 border-t border-white/5">
-        <div className="max-w-5xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-4 text-[11px] text-gray-400">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-white">Japan Time:</span> 
-            <span>Dec 17, 2025</span>
-            <span className="text-[#FC7844]">05:15</span>
-          </div>
-
-          <div className="flex items-center gap-6">
-            <a href="tel:+0123456789" className="flex items-center gap-1.5 hover:text-white transition-colors">
+      {/* Bottom bar */}
+      <div className="relative z-10 bg-[#1a1a1c]/80 border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <JapanClock />
+          <div className="flex items-center gap-4">
+            <a href="tel:+0123456789" className="flex items-center gap-1.5 text-gray-300 hover:text-white transition-colors">
               <Phone className="w-3.5 h-3.5 text-[#FC7844]" />
               Call: 0123456789
             </a>
-            <a href="#" className="flex items-center gap-1.5 hover:text-white transition-colors">
+            <a href="#" className="flex items-center gap-1.5 text-gray-300 hover:text-white transition-colors">
               <MessageCircle className="w-3.5 h-3.5 text-[#FC7844]" />
               Whatsapp: 0123456789
             </a>
@@ -478,9 +226,10 @@ export const HeroSection = ({ onFiltersApplied }: { onFiltersApplied: (filters: 
         </div>
       </div>
     </section>
-  );
-};
+  )
+}
 
+// ─── How To Buy Section ───────────────────────────────────────
 const HowToBuyStep = ({
   icon: Icon,
   title,
@@ -630,7 +379,7 @@ const CarCard = ({ car }: { car: Ad }) => {
 // ─── Cars Section ─────────────────────────────────────────────
 const CarsSection = ({ filters }: CarsSectionProps) => {
   
-  const [activeFilter, setActiveFilter] = useState("Make and model");
+
   const [gridCols, setGridCols] = useState(3);
   // const { data: ads, isLoading, isError } = useAds();
   const { data: ads, isLoading, isError } = useAds(filters); // ← pass filters
@@ -756,21 +505,7 @@ const CarsSection = ({ filters }: CarsSectionProps) => {
   );
 };
 
-// ─── Footer CTA Section ───────────────────────────────────────
-const FooterCTASection = () => (
-  <section className="bg-[#FC7844] py-12 px-4 text-center">
-    <h3 className="text-white text-2xl font-bold font-['Barlow_Condensed',sans-serif] uppercase tracking-wide mb-3">
-      Can't find the car you're looking for?
-    </h3>
-    <p className="max-w-md mx-auto mb-6 text-sm text-orange-100">
-      Request any car — our team will source it from Japan auctions and ship it directly to you.
-    </p>
-    <button className="inline-flex items-center gap-2 bg-white text-[#FC7844] font-bold px-8 py-3 rounded hover:bg-orange-50 transition-colors text-sm">
-      Request a Car
-      <ArrowRight className="w-4 h-4" />
-    </button>
-  </section>
-);
+
 const BRAND_LOGOS: Record<string, string> = {
   Toyota: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Toyota_carlogo.svg/120px-Toyota_carlogo.svg.png",
   BMW: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/BMW.svg/120px-BMW.svg.png",

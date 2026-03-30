@@ -1,4 +1,4 @@
-import { Facebook, Twitter, Instagram, Youtube, Linkedin, Phone, Mail } from "lucide-react"
+import { Facebook, Twitter, Instagram, Youtube, Linkedin, Phone } from "lucide-react"
 
 const FOOTER_LINKS = {
   Makers: ["Audi", "BMW", "Honda", "Mazda", "Mercedes", "Toyota", "Volkswagen", "Volvo"],

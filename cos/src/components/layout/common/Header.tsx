@@ -1,5 +1,5 @@
 // components/layouts/Header.tsx
-import { Search, Bell, MessageSquare, ChevronDown } from 'lucide-react'
+import { Search, Bell, MessageSquare } from 'lucide-react'
 
 export default function Header() {
   return (

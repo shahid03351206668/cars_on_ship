@@ -1,21 +1,25 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { AuthUser } from "../api/auth";
+import type { SetState } from "zustand";
 
-interface AuthState {
+// ─── State Interface ──────────────────────────────────────────
+export interface AuthState {
   user: AuthUser | null;
   isAuthenticated: boolean;
   setUser: (user: AuthUser) => void;
   logout: () => void;
 }
 
+// ─── Zustand Store ───────────────────────────────────────────
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set: SetState<AuthState>) => ({
       user: null,
       isAuthenticated: false,
 
-      setUser: (user) => set({ user, isAuthenticated: true }),
+      setUser: (user: AuthUser) =>
+        set({ user, isAuthenticated: true }),
 
       logout: () => {
         // Clear Frappe session cookie
@@ -25,9 +29,9 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "cos-auth", // key in localStorage
-      partialize: (s) => ({
-        user: s.user,
-        isAuthenticated: s.isAuthenticated,
+      partialize: (state: AuthState) => ({
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
       }),
     }
   )

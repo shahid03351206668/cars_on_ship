@@ -1,5 +1,4 @@
-// components/layouts/app-layout.tsx
-import { useState } from 'react'
+
 import { 
   House, 
   Car, 
@@ -12,7 +11,7 @@ import {
 } from 'lucide-react'
 import Header from './Header'
 import { SidebarItem } from './sidebar-item'
-import { useAuthStore } from '@/store/auth'
+import { useAuthStore, type AuthState } from '@/store/auth'
 
 export type SidebarItemType = {
   label: string
@@ -67,7 +66,7 @@ const MenuItems: SidebarItemType[] = [
 ]
 
 export function AppLayout({ children }: { children?: React.ReactNode }) {
-  const logout = useAuthStore((state) => state.logout)
+  const logout = useAuthStore((state: AuthState) => state.logout);
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -102,7 +101,7 @@ export function AppLayout({ children }: { children?: React.ReactNode }) {
 
         {/* Footer */}
         <div className="px-4 py-3 text-[11px] border-t border-white/[0.08] shrink-0 text-white/25">
-          © 2026 Tasksy
+          © 2026 COS
         </div>
       </aside>
 
