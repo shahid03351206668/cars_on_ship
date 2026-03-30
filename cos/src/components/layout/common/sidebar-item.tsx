@@ -1,0 +1,74 @@
+// components/layouts/sidebar-item.tsx
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { ChevronRight } from 'lucide-react'
+
+export type SidebarItemType = {
+  label: string
+  icon?: React.ReactNode
+  url: string
+  children?: SidebarItemType[]
+}
+
+type SidebarItemProps = {
+  item: SidebarItemType
+}
+
+export function SidebarItem({ item }: SidebarItemProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const hasChildren = item.children && item.children.length > 0
+
+  if (hasChildren) {
+    return (
+      <div>
+        <button
+          onClick={() => setIsOpen(p => !p)}
+          className="flex items-center w-full gap-3 px-3 py-[9px] text-[13px] font-medium transition-colors rounded-md text-white/60 hover:bg-white/[0.08] hover:text-white"
+        >
+          <span className="flex items-center justify-center w-[18px] h-[18px] shrink-0 text-white/50">
+            {item.icon}
+          </span>
+          <span className="flex-1 text-left truncate">{item.label}</span>
+          <ChevronRight
+            className={`h-[14px] w-[14px] shrink-0 text-white/30 transition-transform duration-200 ${
+              isOpen ? 'rotate-90' : ''
+            }`}
+          />
+        </button>
+
+        {isOpen && (
+          <div className="mt-0.5 ml-[18px] space-y-0.5 border-l border-white/[0.08] pl-3">
+            {item.children!.map((child, index) => (
+              <Link
+                key={index}
+                to={child.url}
+                className="flex items-center gap-2 rounded-md px-3 py-[7px] text-[13px] text-white/50 transition-colors hover:bg-white/[0.08] hover:text-white"
+                activeProps={{ className: 'bg-white/[0.12] text-white font-medium' }}
+              >
+                {child.icon && (
+                  <span className="flex items-center justify-center w-4 h-4 shrink-0">
+                    {child.icon}
+                  </span>
+                )}
+                <span className="truncate">{child.label}</span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <Link
+      to={item.url}
+      className="flex items-center gap-3 px-3 py-[9px] text-[13px] font-medium transition-colors rounded-md text-white/60 hover:bg-white/[0.08] hover:text-white"
+      activeProps={{ className: '!text-white bg-white/[0.12]' }}
+    >
+      <span className="flex items-center justify-center w-[18px] h-[18px] shrink-0 text-white/50">
+        {item.icon}
+      </span>
+      <span className="truncate">{item.label}</span>
+    </Link>
+  )
+}

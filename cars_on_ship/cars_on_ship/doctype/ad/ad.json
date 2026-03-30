@@ -1,0 +1,195 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-03-17 11:59:12.447559",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "user",
+  "make",
+  "model",
+  "seller_type",
+  "boot_space",
+  "drive_type",
+  "acceleration",
+  "column_break_ylxs7",
+  "fuel_type",
+  "seats",
+  "doors",
+  "colour",
+  "colour_code",
+  "body_type",
+  "column_break_7zdnc",
+  "gearbox",
+  "vehicle_status",
+  "year",
+  "price",
+  "mileage",
+  "section_break_xhaif",
+  "attachments",
+  "section_break_qxbq4",
+  "description"
+ ],
+ "fields": [
+  {
+   "fieldname": "model",
+   "fieldtype": "Link",
+   "label": "Model",
+   "options": "Model"
+  },
+  {
+   "fieldname": "seller_type",
+   "fieldtype": "Link",
+   "label": "Seller Type",
+   "options": "Seller type"
+  },
+  {
+   "fieldname": "boot_space",
+   "fieldtype": "Link",
+   "label": "Boot Space",
+   "options": "Boot space"
+  },
+  {
+   "fieldname": "drive_type",
+   "fieldtype": "Link",
+   "label": "Drive Type",
+   "options": "Drive type"
+  },
+  {
+   "fieldname": "acceleration",
+   "fieldtype": "Link",
+   "label": "Acceleration",
+   "options": "Acceleration"
+  },
+  {
+   "fieldname": "fuel_type",
+   "fieldtype": "Link",
+   "label": "Fuel Type",
+   "options": "Fuel Type"
+  },
+  {
+   "fieldname": "seats",
+   "fieldtype": "Link",
+   "label": "Seats",
+   "options": "Seats"
+  },
+  {
+   "fieldname": "doors",
+   "fieldtype": "Link",
+   "label": "Doors ",
+   "options": "Doors"
+  },
+  {
+   "fieldname": "colour",
+   "fieldtype": "Link",
+   "label": "Colour",
+   "options": "Colour"
+  },
+  {
+   "fieldname": "body_type",
+   "fieldtype": "Link",
+   "label": "Body Type",
+   "options": "Body type"
+  },
+  {
+   "fieldname": "gearbox",
+   "fieldtype": "Link",
+   "label": "Gearbox",
+   "options": "Gearbox"
+  },
+  {
+   "fieldname": "vehicle_status",
+   "fieldtype": "Link",
+   "label": "Vehicle Status",
+   "options": "Vehicle Status"
+  },
+  {
+   "fieldname": "year",
+   "fieldtype": "Link",
+   "label": "Year",
+   "options": "Year"
+  },
+  {
+   "fieldname": "make",
+   "fieldtype": "Link",
+   "label": "Make",
+   "options": "Make"
+  },
+  {
+   "fieldname": "column_break_ylxs7",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_7zdnc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_xhaif",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "attachments",
+   "fieldtype": "Table",
+   "label": "Attachments",
+   "options": "Ad detail"
+  },
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "User",
+   "options": "User"
+  },
+  {
+   "fieldname": "section_break_qxbq4",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fetch_from": "colour.color_code",
+   "fieldname": "colour_code",
+   "fieldtype": "Data",
+   "label": "Colour Code",
+   "read_only": 1
+  },
+  {
+   "fieldname": "price",
+   "fieldtype": "Currency",
+   "label": "Price"
+  },
+  {
+   "fieldname": "mileage",
+   "fieldtype": "Float",
+   "label": "Mileage"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-03-25 18:01:48.862491",
+ "modified_by": "Administrator",
+ "module": "Cars on Ship",
+ "name": "Ad",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

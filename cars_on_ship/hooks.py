@@ -215,3 +215,9 @@ app_license = "MIT"
 # auth_hooks = [
 #	"cars_on_ship.auth.validate"
 # ]
+
+
+website_route_rules = [
+    {"from_route": "/cos/<path:app_path>", "to_route": "cos"},
+    {"from_route": "/cos", "to_route": "cos"},
+]
