@@ -1,7 +1,6 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, type PersistOptions } from "zustand/middleware";
 import type { AuthUser } from "../api/auth";
-import type { SetState } from "zustand";
 
 // ─── State Interface ──────────────────────────────────────────
 export interface AuthState {
@@ -11,10 +10,13 @@ export interface AuthState {
   logout: () => void;
 }
 
+// ─── Type for the state setter ────────────────────────────────
+type SetState = (partial: Partial<AuthState> | ((state: AuthState) => Partial<AuthState>)) => void;
+
 // ─── Zustand Store ───────────────────────────────────────────
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set: SetState<AuthState>) => ({
+    (set: SetState) => ({
       user: null,
       isAuthenticated: false,
 
@@ -33,6 +35,6 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
-    }
+    } as PersistOptions<AuthState>
   )
 );

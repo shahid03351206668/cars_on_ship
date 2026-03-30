@@ -380,7 +380,7 @@ const CarCard = ({ car }: { car: Ad }) => {
 const CarsSection = ({ filters }: CarsSectionProps) => {
   
 
-  const [gridCols, setGridCols] = useState(3);
+  const [gridCols] = useState(3);
   // const { data: ads, isLoading, isError } = useAds();
   const { data: ads, isLoading, isError } = useAds(filters); // ← pass filters
 

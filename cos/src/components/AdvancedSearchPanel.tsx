@@ -17,6 +17,7 @@ import {
     useBootSpaces,
     useSellerTypes,
 } from "@/hooks/useVehicles"
+import type { BodyType, Colour } from "@/api/vehicles"
 
 // ─── Filter State ─────────────────────────────────────────────
 
@@ -281,7 +282,7 @@ export default function AdvancedSearchPanel({ onSearch, onClose }: Props) {
   // Year options from API
   const yearOptions = (years ?? []).map((y) => ({ value: y.year, label: y.year }))
 
-  // Price options (static ranges)
+  // Price options (static ranges) - Convert to string
   const priceOptions = [500, 1000, 2000, 3000, 5000, 8000, 10000, 15000, 20000, 30000, 50000].map(
     (p) => ({ value: String(p), label: `$${p.toLocaleString()}` })
   )
@@ -368,9 +369,11 @@ export default function AdvancedSearchPanel({ onSearch, onClose }: Props) {
           <RangeRow
             label="From – To"
             fromValue={filters.yearFrom} onFromChange={(v) => set("yearFrom", v)}
-            fromOptions={yearOptions} fromPlaceholder="From"
+            fromOptions={yearOptions.map((y) => ({ value: String(y.value), label: String(y.label) }))}
+            fromPlaceholder="From"
             toValue={filters.yearTo} onToChange={(v) => set("yearTo", v)}
-            toOptions={yearOptions} toPlaceholder="To"
+            toOptions={yearOptions.map((y) => ({ value: String(y.value), label: String(y.label) }))}
+            toPlaceholder="To"
           />
         </Section>
 
@@ -379,9 +382,11 @@ export default function AdvancedSearchPanel({ onSearch, onClose }: Props) {
           <RangeRow
             label="From – To"
             fromValue={filters.priceFrom} onFromChange={(v) => set("priceFrom", v)}
-            fromOptions={priceOptions} fromPlaceholder="Min Price"
+            fromOptions={priceOptions}
+            fromPlaceholder="Min Price"
             toValue={filters.priceTo} onToChange={(v) => set("priceTo", v)}
-            toOptions={priceOptions} toPlaceholder="Max Price"
+            toOptions={priceOptions}
+            toPlaceholder="Max Price"
           />
         </Section>
 
@@ -390,9 +395,11 @@ export default function AdvancedSearchPanel({ onSearch, onClose }: Props) {
           <RangeRow
             label="From – To"
             fromValue={filters.mileageFrom} onFromChange={(v) => set("mileageFrom", v)}
-            fromOptions={mileageOptions} fromPlaceholder="Min km"
+            fromOptions={mileageOptions}
+            fromPlaceholder="Min km"
             toValue={filters.mileageTo} onToChange={(v) => set("mileageTo", v)}
-            toOptions={mileageOptions} toPlaceholder="Max km"
+            toOptions={mileageOptions}
+            toPlaceholder="Max km"
           />
         </Section>
 
@@ -435,9 +442,11 @@ export default function AdvancedSearchPanel({ onSearch, onClose }: Props) {
           <RangeRow
             label="From – To"
             fromValue={filters.engineSizeFrom} onFromChange={(v) => set("engineSizeFrom", v)}
-            fromOptions={engineOptions} fromPlaceholder="Min cc"
+            fromOptions={engineOptions}
+            fromPlaceholder="Min cc"
             toValue={filters.engineSizeTo} onToChange={(v) => set("engineSizeTo", v)}
-            toOptions={engineOptions} toPlaceholder="Max cc"
+            toOptions={engineOptions}
+            toPlaceholder="Max cc"
           />
         </Section>
 

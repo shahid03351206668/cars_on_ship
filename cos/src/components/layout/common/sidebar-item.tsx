@@ -1,6 +1,6 @@
-// components/layouts/sidebar-item.tsx
+// components/layout/common/sidebar-item.tsx
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 
 export type SidebarItemType = {
@@ -39,11 +39,16 @@ export function SidebarItem({ item }: SidebarItemProps) {
         {isOpen && (
           <div className="mt-0.5 ml-[18px] space-y-0.5 border-l border-white/[0.08] pl-3">
             {item.children!.map((child, index) => (
-              <Link
+              <NavLink
                 key={index}
                 to={child.url}
-                className="flex items-center gap-2 rounded-md px-3 py-[7px] text-[13px] text-white/50 transition-colors hover:bg-white/[0.08] hover:text-white"
-                activeProps={{ className: 'bg-white/[0.12] text-white font-medium' }}
+                className={({ isActive }: { isActive: boolean }) =>
+                  `flex items-center gap-2 rounded-md px-3 py-[7px] text-[13px] transition-colors ${
+                    isActive
+                      ? 'bg-white/[0.12] text-white font-medium'
+                      : 'text-white/50 hover:bg-white/[0.08] hover:text-white'
+                  }`
+                }
               >
                 {child.icon && (
                   <span className="flex items-center justify-center w-4 h-4 shrink-0">
@@ -51,7 +56,7 @@ export function SidebarItem({ item }: SidebarItemProps) {
                   </span>
                 )}
                 <span className="truncate">{child.label}</span>
-              </Link>
+              </NavLink>
             ))}
           </div>
         )}
@@ -60,15 +65,20 @@ export function SidebarItem({ item }: SidebarItemProps) {
   }
 
   return (
-    <Link
+    <NavLink
       to={item.url}
-      className="flex items-center gap-3 px-3 py-[9px] text-[13px] font-medium transition-colors rounded-md text-white/60 hover:bg-white/[0.08] hover:text-white"
-      activeProps={{ className: '!text-white bg-white/[0.12]' }}
+      className={({ isActive }: { isActive: boolean }) =>
+        `flex items-center gap-3 px-3 py-[9px] text-[13px] font-medium transition-colors rounded-md ${
+          isActive
+            ? '!text-white bg-white/[0.12]'
+            : 'text-white/60 hover:bg-white/[0.08] hover:text-white'
+        }`
+      }
     >
       <span className="flex items-center justify-center w-[18px] h-[18px] shrink-0 text-white/50">
         {item.icon}
       </span>
       <span className="truncate">{item.label}</span>
-    </Link>
+    </NavLink>
   )
 }
