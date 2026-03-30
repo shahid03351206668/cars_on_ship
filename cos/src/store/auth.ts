@@ -31,7 +31,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "cos-auth", // key in localStorage
-      partialize: (state): Partial<AuthState> => ({
+      partialize: (state: AuthState): Partial<AuthState> => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
