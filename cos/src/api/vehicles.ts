@@ -1,5 +1,9 @@
 // ─── Base fetcher ─────────────────────────────────────────────
 import type { AdvancedFilters } from "@/components/AdvancedSearchPanel";
+import { getStoredSid } from "./auth";
+
+// ─── Base URL ─────────────────────────────────────────────────
+const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
 
 // ─── Ad Types ─────────────────────────────────────────────────
 export interface Ad {
@@ -21,6 +25,8 @@ export interface Ad {
   gearbox: string;
   description?: string;
   images: string[];
+  from_port?: string;
+  to_port?: string;
 }
 
 export interface AdDetail extends Ad {
@@ -42,11 +48,17 @@ export interface Model {
   make: string;
 }
 
+export interface Variant {
+  name: string;
+  model: string;
+}
+
 export interface Year {
   name: string;
   year: number;
 }
 
+export type Port = Option;
 export type VehicleStatus = Option;
 export type Gearbox = Option;
 export type BodyType = Option;
@@ -68,12 +80,18 @@ interface ApiResponse<T> {
   message: T;
 }
 
-// ─── Base fetcher ─────────────────────────────────────────────
-export const fetchAPI = async <T extends object>(
+// ─── CSRF Token ───────────────────────────────────────────────
+const getCsrfToken = (): string => {
+  const match = document.cookie.match(/csrftoken=([^;]+)/);
+  return match ? match[1] : "fetch";
+};
+
+// ─── Public Fetcher (no auth needed) ──────────────────────────
+const fetchAPI = async <T extends object>(
   method: string,
   params?: Record<string, string>
 ): Promise<T> => {
-  const url = new URL(`/api/method/${method}`, window.location.origin);
+  const url = new URL(`/api/method/${method}`, BASE_URL);
 
   if (params) {
     Object.entries(params).forEach(([key, val]) =>
@@ -81,7 +99,43 @@ export const fetchAPI = async <T extends object>(
     );
   }
 
-  const res = await fetch(url.toString());
+  const res = await fetch(url.toString(), {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "X-Frappe-CSRF-Token": getCsrfToken(),
+    },
+  });
+
+  if (!res.ok) throw new Error("API Error");
+
+  const data: ApiResponse<T> = await res.json();
+  return data.message;
+};
+
+// ─── Authenticated Fetcher (includes sid header) ───────────────
+const fetchAPIAuth = async <T extends object>(
+  method: string,
+  params?: Record<string, string>
+): Promise<T> => {
+  const sid = getStoredSid();
+  const url = new URL(`/api/method/${method}`, BASE_URL);
+
+  if (params) {
+    Object.entries(params).forEach(([key, val]) =>
+      url.searchParams.append(key, val)
+    );
+  }
+
+  const res = await fetch(url.toString(), {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "X-Frappe-CSRF-Token": getCsrfToken(),
+      ...(sid ? { "X-Frappe-Session-Id": sid } : {}),
+    },
+  });
+
   if (!res.ok) throw new Error("API Error");
 
   const data: ApiResponse<T> = await res.json();
@@ -90,29 +144,24 @@ export const fetchAPI = async <T extends object>(
 
 // ─── Core APIs ────────────────────────────────────────────────
 
-/**
- * Fetch all available car makes
- */
 export const getMakes = (): Promise<Make[]> =>
   fetchAPI<Make[]>("cars_on_ship.api.get_makes");
 
-/**
- * Fetch models, optionally filtered by make
- * @param make - Optional make name to filter models
- */
 export const getModels = (make?: string): Promise<Model[]> =>
   fetchAPI<Model[]>("cars_on_ship.api.get_models", make ? { make } : undefined);
 
-/**
- * Fetch all available years
- */
+export const getVariants = (model?: string): Promise<Variant[]> =>
+  fetchAPI<Variant[]>("cars_on_ship.api.get_variants", model ? { model } : undefined);
+
 export const getYears = (): Promise<Year[]> =>
   fetchAPI<Year[]>("cars_on_ship.api.get_years");
 
 /**
- * Fetch ads with optional advanced filters
- * @param filters - Advanced filter criteria
+ * Fetch all available ports
  */
+export const getPorts = (): Promise<Port[]> =>
+  fetchAPI<Port[]>("cars_on_ship.api.get_ports");
+
 export const getAds = async (
   filters?: Partial<AdvancedFilters>
 ): Promise<Ad[]> => {
@@ -121,6 +170,7 @@ export const getAds = async (
   if (filters) {
     if (filters.make) params.make = filters.make;
     if (filters.model) params.model = filters.model;
+    if (filters.variant) params.variant = filters.variant;
     if (filters.yearFrom) params.year_from = filters.yearFrom;
     if (filters.yearTo) params.year_to = filters.yearTo;
     if (filters.priceFrom) params.price_from = filters.priceFrom;
@@ -131,6 +181,10 @@ export const getAds = async (
     if (filters.engineSizeFrom)
       params.engine_size_from = filters.engineSizeFrom;
     if (filters.engineSizeTo) params.engine_size_to = filters.engineSizeTo;
+    if (filters.fromPort) params.from_port = filters.fromPort;
+    if (filters.toPort) params.to_port = filters.toPort;
+    if (filters.fromPostingDate) params.from_posting_date = filters.fromPostingDate;
+    if (filters.toPostingDate) params.to_posting_date = filters.toPostingDate;
 
     // Arrays → comma-separated strings
     if (filters.vehicleStatuses?.length)
@@ -234,3 +288,9 @@ export const getBootSpaces = (): Promise<BootSpace[]> =>
  */
 export const getSellerTypes = (): Promise<SellerType[]> =>
   fetchAPI<SellerType[]>("cars_on_ship.api.get_seller_types");
+
+/**
+ * Fetch user-specific ads (requires authentication)
+ */
+export const getUserwiseAd = (): Promise<AdDetail[]> =>
+  fetchAPIAuth<AdDetail[]>("cars_on_ship.api.get_userwise_ad");

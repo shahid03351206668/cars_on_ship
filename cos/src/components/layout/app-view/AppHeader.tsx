@@ -9,28 +9,29 @@ import { useLogout } from "@/hooks/useAuth";
 // ─── Nav link definitions per role ───────────────────────────
 
 const guestLinks = [
-  { label: "Home", href: "/app" },
-  { label: "About", href: "/app/about" },
-  { label: "How to Buy", href: "/app/how-to-buy" },
-  { label: "Update", href: "/app/update" },
-  { label: "Catalog", href: "/app/catalog" },
-  { label: "Contact Us", href: "/app/contact" },
+  { label: "Home", href: "/" },
+  { label: "About", href: "/about" },
+  { label: "How to Buy", href: "/how-to-buy" },
+  { label: "Update", href: "/update" },
+  { label: "Catalog", href: "/catalog" },
+  { label: "Contact Us", href: "/contact" },
 ];
 
 const buyerLinks = [
-  { label: "Home", href: "/buyer-home" },
-  { label: "Catalog", href: "/buyer-home/catalog" },
-  { label: "My Orders", href: "/buyer-home/orders" },
-  { label: "How to Buy", href: "/buyer-home/how-to-buy" },
-  { label: "Contact Us", href: "/buyer-home/contact" },
+  { label: "Home", href: "/buyer" }, // Matches the 'index' route
+  { label: "Catalog", href: "/buyer/catalog" },
+  { label: "My Orders", href: "/buyer/orders" },
+  { label: "How to Buy", href: "/buyer/how-to-buy" },
+  { label: "Contact Us", href: "/buyer/contact" },
 ];
 
 const salerLinks = [
-  { label: "Dashboard", href: "/saler-home" },
-  { label: "Listings", href: "/saler-home/listings" },
-  { label: "Add Vehicle", href: "/saler-home/add" },
-  { label: "Inquiries", href: "/saler-home/inquiries" },
-  { label: "Reports", href: "/saler-home/reports" },
+  { label: "Dashboard", href: "/seller" }, // Matches the 'index' route
+  { label: "Listings", href: "/seller/listings" },
+  { label: "Add Vehicle", href: "/seller/add" },
+  { label: "Inquiries", href: "/seller/inquiries" },
+  { label: "Reports", href: "/seller/reports" },
+  { label: "Wallet", href: "/seller/wallet" }, // Now /seller/wallet works!
 ];
 
 // ─── Logo ─────────────────────────────────────────────────────
@@ -39,9 +40,9 @@ function Logo() {
   const { user } = useAuthStore();
   const href =
     user?.role === "Sales User"
-      ? "/saler-home"
+      ? "/seller"
       : user?.role === "Buyer"
-      ? "/buyer-home"
+      ? "/buyer"
       : "/app";
 
   return (
@@ -67,16 +68,19 @@ function Logo() {
 }
 
 // ─── User badge (shown when logged in) ───────────────────────
+function UserBadge({ username }: { username: string }) {
+  // Safe check: if username is null/undefined, it won't crash
+  const initial = username?.charAt(0).toUpperCase() || "U"; 
 
-function UserBadge({ fullName, role }: { fullName: string; role: string }) {
   return (
     <div className="flex items-center gap-2">
       <div className="w-7 h-7 rounded-full bg-[#FC7844] flex items-center justify-center text-white text-xs font-bold shrink-0">
-        {fullName.charAt(0).toUpperCase()}
+        {initial}
       </div>
       <div className="hidden text-right lg:block">
-        <p className="text-xs font-semibold leading-none text-white">{fullName}</p>
-        <p className="text-[10px] text-gray-400 leading-none mt-0.5">{role}</p>
+        <p className="text-xs font-semibold leading-none text-white">
+          {username || "User"}
+        </p>
       </div>
     </div>
   );
@@ -134,7 +138,7 @@ export default function AppHeader() {
         <div className="items-center hidden gap-3 md:flex">
           {isAuthenticated && user ? (
             <>
-              <UserBadge fullName={user.full_name} role={user.role} />
+              <UserBadge username={user.username} />
               <Button
                 variant="outline"
                 size="sm"
@@ -183,14 +187,12 @@ export default function AppHeader() {
           {isAuthenticated && user && (
             <div className="flex items-center gap-2 py-3 mb-2 border-b border-white/10">
               <div className="w-8 h-8 rounded-full bg-[#FC7844] flex items-center justify-center text-white text-sm font-bold shrink-0">
-                {user.full_name.charAt(0).toUpperCase()}
+                {/* Fix: use username and add the ? */}
+                {user?.username?.charAt(0).toUpperCase() || "U"}
               </div>
               <div>
                 <p className="text-xs font-semibold leading-none text-white">
-                  {user.full_name}
-                </p>
-                <p className="text-[10px] text-gray-400 leading-none mt-0.5">
-                  {user.role}
+                  {user?.username || "User"}
                 </p>
               </div>
             </div>

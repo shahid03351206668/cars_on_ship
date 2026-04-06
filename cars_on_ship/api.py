@@ -1,89 +1,9 @@
 import frappe
 from frappe.utils.password import update_password, check_password
 
+#-----------------------------  kace api    -----------------------------------------------#
 
-@frappe.whitelist(allow_guest=True)
-def register_user(first_name, last_name, email, mobile_no, new_password, role):
-    allowed_roles = ["Buyer", "Sales User"]
-    if role not in allowed_roles:
-        frappe.throw("Invalid role selected.")
-
-    if frappe.db.exists("User", email):
-        frappe.throw("An account with this email already exists.")
-
-    user = frappe.get_doc(
-        {
-            "doctype": "User",
-            "first_name": first_name,
-            "last_name": last_name,
-            "email": email,
-            "mobile_no": mobile_no,
-            "send_welcome_email": 0,
-            "roles": [{"role": role}],
-        }
-    )
-    user.insert(ignore_permissions=True)
-    update_password(email, new_password)
-    frappe.db.commit()
-
-    return {
-        "email": email,
-        "full_name": f"{first_name} {last_name}",
-        "role": role,
-    }
-
-
-@frappe.whitelist(allow_guest=True)
-def login_user(usr, pwd):
-    try:
-        check_password(usr, pwd)
-    except frappe.AuthenticationError:
-        frappe.throw("Invalid email or password.")
-
-    doc = frappe.get_doc("User", usr)
-    role_map = {r.role for r in doc.roles}
-
-    app_role = None
-    for r in ["Buyer", "Sales User"]:
-        if r in role_map:
-            app_role = r
-            break
-
-    if not app_role:
-        frappe.throw("No valid role found.")
-
-    return {
-        "email": doc.email,
-        "full_name": doc.full_name,
-        "role": app_role,
-    }
-    
-    
-@frappe.whitelist()
-def get_current_user():
-    """Return current logged-in user details"""
-    if frappe.session.user == "Guest":
-        frappe.throw("Not authenticated", frappe.PermissionError)
-    
-    user = frappe.get_doc("User", frappe.session.user)
-    role_map = {r.role for r in user.roles}
-    
-    # Find app role (Buyer or Sales User)
-    app_role = None
-    for r in ["Buyer", "Sales User"]:
-        if r in role_map:
-            app_role = r
-            break
-    
-    if not app_role:
-        frappe.throw("No valid role found", frappe.PermissionError)
-    
-    return {
-        "email": user.email,
-        "full_name": user.full_name,
-        "role": app_role,
-    }
-
+#-----------------------------  kace api    -----------------------------------------------#
 
 @frappe.whitelist(allow_guest=True)
 def get_makes():
@@ -97,11 +17,23 @@ def get_models(make=None):
     filters = {"make": make} if make else {}
     return frappe.get_all("Model", fields=["name", "make"], filters=filters)
 
+@frappe.whitelist(allow_guest=True)
+def get_variants(model=None):
+    """Fetch variants, optionally filtered by a specific model"""
+    filters = {"model": model} if model else {}
+    return frappe.get_all("Variant", fields=["name", "model"], filters=filters)
+
 
 @frappe.whitelist(allow_guest=True)
 def get_years():
     """Fetch years for the primary search and advanced range filters"""
     return frappe.get_all("Year", fields=["name", "year"], order_by="year desc")
+
+
+@frappe.whitelist(allow_guest=True)
+def get_ports():
+    """Fetch all available ports"""
+    return frappe.get_all("Port", fields=["name"])
 
 
 @frappe.whitelist(allow_guest=True)
@@ -174,6 +106,7 @@ def get_seller_types():
 def get_ad(
     make=None,
     model=None,
+    variant=None,
     year_from=None,
     year_to=None,
     price_from=None,
@@ -183,6 +116,10 @@ def get_ad(
     eta=None,
     engine_size_from=None,
     engine_size_to=None,
+    from_port=None,
+    to_port=None,
+    from_posting_date=None,
+    to_posting_date=None,
     vehicle_statuses=None,
     gearboxes=None,
     body_types=None,
@@ -206,6 +143,9 @@ def get_ad(
     if model:
         conditions.append("a.model = %(model)s")
         values["model"] = model
+    if variant:
+        conditions.append("a.variant = %(variant)s")
+        values["variant"] = variant
 
     if year_from:
         conditions.append("a.year >= %(year_from)s")
@@ -242,6 +182,22 @@ def get_ad(
     if eta:
         conditions.append("a.eta_days <= %(eta)s")
         values["eta"] = int(eta)
+
+    if from_port:
+        conditions.append("a.from_port = %(from_port)s")
+        values["from_port"] = from_port
+
+    if to_port:
+        conditions.append("a.to_port = %(to_port)s")
+        values["to_port"] = to_port
+
+    if from_posting_date:
+        conditions.append("DATE(a.creation) >= DATE(%(from_posting_date)s)")
+        values["from_posting_date"] = from_posting_date
+
+    if to_posting_date:
+        conditions.append("DATE(a.creation) <= DATE(%(to_posting_date)s)")
+        values["to_posting_date"] = to_posting_date
 
     # ── Multi-value filters (comma-separated strings → IN clause) ──
     def add_in_filter(field, raw_value, alias="a"):
@@ -280,6 +236,8 @@ def get_ad(
             a.doors,
             a.gearbox,
             a.description,
+            a.from_port,
+            a.to_port,
             GROUP_CONCAT(ab.image) as images
         FROM `tabAd` a
         LEFT JOIN `tabAd detail` ab ON a.name = ab.parent
@@ -298,7 +256,6 @@ def get_ad(
 
 
 
-
 @frappe.whitelist(allow_guest=True)
 def get_ad_detail(name):
     data = frappe.db.sql("""
@@ -307,7 +264,7 @@ def get_ad_detail(name):
             a.make, a.model, a.colour, a.colour_code,
             a.body_type, a.vehicle_status, a.year, a.acceleration,
             a.fuel_type, a.seats, a.doors, a.gearbox, a.description,
-            a.price, a.mileage, a.drive_type,
+            a.price, a.mileage, a.drive_type, a.from_port, a.to_port,
             GROUP_CONCAT(ab.image ORDER BY ab.idx) as images
         FROM `tabAd` a
         LEFT JOIN `tabAd detail` ab ON a.name = ab.parent
@@ -321,3 +278,22 @@ def get_ad_detail(name):
     row = data[0]
     row["images"] = row["images"].split(",") if row["images"] else []
     return row
+
+
+@frappe.whitelist(allow_guest=True)
+def get_userwise_ad():
+    user = frappe.session.user
+    data = frappe.db.sql("""
+        SELECT
+            a.name, a.user, a.seller_type, a.boot_space,
+            a.make, a.model, a.colour, a.colour_code,
+            a.body_type, a.vehicle_status, a.year, a.acceleration,
+            a.fuel_type, a.seats, a.doors, a.gearbox, a.description,
+            a.price, a.mileage, a.drive_type, a.from_port, a.to_port,
+            GROUP_CONCAT(ab.image ORDER BY ab.idx) as images
+        FROM `tabAd` a
+        LEFT JOIN `tabAd detail` ab ON a.name = ab.parent
+        WHERE a.user = %(user)s
+        GROUP BY a.name
+    """, values={"user": user}, as_dict=1, debug=1)
+    return data

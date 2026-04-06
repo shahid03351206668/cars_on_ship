@@ -13,15 +13,13 @@ import type { RegisterPayload, UserRole } from "../../api/auth";
 
 export default function RegisterFields() {
   const [form, setForm] = useState<RegisterPayload>({
-    first_name: "",
-    last_name: "",
+    user_name: "",
     email: "",
-    mobile_no: "",
-    new_password: "",
+    phone: "",
     role: "Buyer",
   });
 
-  const { mutate: register, isPending, error } = useRegister();
+  const { mutate: register, isPending, error, isSuccess } = useRegister();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
@@ -33,27 +31,15 @@ export default function RegisterFields() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-3">
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-gray-700">First Name</label>
-          <Input
-            name="first_name"
-            placeholder="John"
-            value={form.first_name}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-gray-700">Last Name</label>
-          <Input
-            name="last_name"
-            placeholder="Doe"
-            value={form.last_name}
-            onChange={handleChange}
-            required
-          />
-        </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-sm font-medium text-gray-700">Name</label>
+        <Input
+          name="user_name"
+          placeholder="Your username"
+          value={form.user_name}
+          onChange={handleChange}
+          required
+        />
       </div>
 
       <div className="flex flex-col gap-1">
@@ -69,32 +55,22 @@ export default function RegisterFields() {
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-gray-700">Mobile Number</label>
+        <label className="text-sm font-medium text-gray-700">Phone</label>
         <Input
-          name="mobile_no"
+          name="phone"
           type="tel"
           placeholder="+92 300 0000000"
-          value={form.mobile_no}
+          value={form.phone}
           onChange={handleChange}
           required
         />
+        <p className="text-xs text-gray-400">
+          Your phone number will also serve as your password.
+        </p>
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-gray-700">Password</label>
-        <Input
-          name="new_password"
-          type="password"
-          placeholder="Min. 8 characters"
-          value={form.new_password}
-          onChange={handleChange}
-          required
-          minLength={8}
-        />
-      </div>
-
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-gray-700">I want to…</label>
+        <label className="text-sm font-medium text-gray-700">User Type</label>
         <Select
           value={form.role}
           onValueChange={(val) =>
@@ -105,8 +81,8 @@ export default function RegisterFields() {
             <SelectValue placeholder="Select your role" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Buyer">Buy a car</SelectItem>
-            <SelectItem value="Sales User">Sell a car</SelectItem>
+            <SelectItem value="Buyer">Buyer</SelectItem>
+            <SelectItem value="Sales User">Sales User</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -117,7 +93,13 @@ export default function RegisterFields() {
         </p>
       )}
 
-      <Button type="submit" disabled={isPending} className="w-full mt-1">
+      {isSuccess && (
+        <p className="px-3 py-2 text-sm text-center text-green-600 rounded-md bg-green-50">
+          Account created! Redirecting to login…
+        </p>
+      )}
+
+      <Button type="submit" disabled={isPending} className="w-full mt-1 bg-[#FC7844] hover:bg-[#FC7844]/90 text-white">
         {isPending ? "Creating account…" : "Create Account"}
       </Button>
     </form>

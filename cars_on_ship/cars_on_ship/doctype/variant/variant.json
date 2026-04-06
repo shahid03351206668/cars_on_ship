@@ -2,29 +2,36 @@
  "actions": [],
  "allow_import": 1,
  "allow_rename": 1,
- "autoname": "field:manufacture",
- "creation": "2026-03-16 14:32:13.033215",
+ "autoname": "field:variant",
+ "creation": "2026-04-03 18:33:32.090869",
  "default_view": "List",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "manufacture"
+  "model",
+  "variant"
  ],
  "fields": [
   {
-   "fieldname": "manufacture",
+   "fieldname": "model",
+   "fieldtype": "Link",
+   "label": "Model",
+   "options": "Model"
+  },
+  {
+   "fieldname": "variant",
    "fieldtype": "Data",
-   "label": "Manufacture",
+   "label": "Variant",
    "unique": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-03 18:40:18.798232",
+ "modified": "2026-04-03 18:49:23.335933",
  "modified_by": "Administrator",
  "module": "Cars on Ship",
- "name": "Make",
+ "name": "Variant",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [

@@ -4,6 +4,7 @@ import {
   getAds,
   getMakes,
   getModels,
+  getVariants,
   getYears,
   getVehicleStatuses,
   getGearboxes,
@@ -17,6 +18,7 @@ import {
   getBootSpaces,
   getSellerTypes,
   getAdDetail,
+  getPorts,
   // Types
   type Ad,
   type AdDetail,
@@ -34,8 +36,11 @@ import {
   type DriveType,
   type BootSpace,
   type SellerType,
+  type Variant,
+  type Port,
 } from "@/api/vehicles";
 import type { AdvancedFilters } from "@/components/AdvancedSearchPanel";
+import { getUserwiseAd } from "@/api/vehicles";
 
 // ─── Core Hooks ───────────────────────────────────────────────
 
@@ -61,6 +66,14 @@ export const useModels = (make?: string): UseQueryResult<Model[], Error> =>
     staleTime: 1000 * 60 * 60,
   });
 
+export const useVariants = (model?: string): UseQueryResult<Variant[], Error> =>
+  useQuery({
+    queryKey: ["variants", model],
+    queryFn: () => getVariants(model),
+    enabled: !!model, // Only fetch when model is provided
+    staleTime: 1000 * 60 * 60,
+  });
+
 /**
  * Hook to fetch all available years
  */
@@ -68,6 +81,16 @@ export const useYears = (): UseQueryResult<Year[], Error> =>
   useQuery({
     queryKey: ["years"],
     queryFn: getYears,
+    staleTime: 1000 * 60 * 60,
+  });
+
+/**
+ * Hook to fetch all available ports
+ */
+export const usePorts = (): UseQueryResult<Port[], Error> =>
+  useQuery({
+    queryKey: ["ports"],
+    queryFn: getPorts,
     staleTime: 1000 * 60 * 60,
   });
 
@@ -219,6 +242,14 @@ export const useSellerTypes = (): UseQueryResult<SellerType[], Error> =>
     staleTime: 1000 * 60 * 60,
   });
 
+
+export const useUserwiseAds = (): UseQueryResult<AdDetail[], Error> =>
+  useQuery({
+    queryKey: ["userwise-ads"],
+    queryFn: getUserwiseAd,
+    staleTime: 1000 * 60 * 5,
+  });
+
 // ─── Combined Filter Hook ─────────────────────────────────────
 
 /**
@@ -227,7 +258,10 @@ export const useSellerTypes = (): UseQueryResult<SellerType[], Error> =>
  */
 export interface UseVehicleFiltersResult {
   makes: UseQueryResult<Make[], Error>;
+  models: UseQueryResult<Model[], Error>;
+  variants: UseQueryResult<Variant[], Error>;
   years: UseQueryResult<Year[], Error>;
+  ports: UseQueryResult<Port[], Error>;
   statuses: UseQueryResult<VehicleStatus[], Error>;
   gearboxes: UseQueryResult<Gearbox[], Error>;
   bodyTypes: UseQueryResult<BodyType[], Error>;
@@ -241,10 +275,13 @@ export interface UseVehicleFiltersResult {
   sellerTypes: UseQueryResult<SellerType[], Error>;
 }
 
-export const useVehicleFilters = (): UseVehicleFiltersResult => {
+export const useVehicleFilters = (make?: string, model?: string): UseVehicleFiltersResult => {
   return {
     makes: useMakes(),
+    models: useModels(make),
+    variants: useVariants(model),
     years: useYears(),
+    ports: usePorts(),
     statuses: useVehicleStatuses(),
     gearboxes: useGearboxes(),
     bodyTypes: useBodyTypes(),

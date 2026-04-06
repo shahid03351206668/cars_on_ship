@@ -178,6 +178,7 @@ app_license = "MIT"
 # Request Events
 # ----------------
 # before_request = ["cars_on_ship.utils.before_request"]
+before_request = ["cars_on_ship.authentication.set_session_from_header"]
 # after_request = ["cars_on_ship.utils.after_request"]
 
 # Job Events
@@ -215,7 +216,7 @@ app_license = "MIT"
 # auth_hooks = [
 #	"cars_on_ship.auth.validate"
 # ]
-
+website_redirect_all_to_index = 0
 
 website_route_rules = [
     # Dev Route (Points to cos.html)

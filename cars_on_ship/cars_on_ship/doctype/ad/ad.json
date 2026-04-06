@@ -7,26 +7,73 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "lot_number",
   "user",
   "make",
   "model",
+  "variant",
   "seller_type",
   "boot_space",
   "drive_type",
   "acceleration",
+  "sold",
   "column_break_ylxs7",
+  "vin",
   "fuel_type",
   "seats",
   "doors",
   "colour",
   "colour_code",
   "body_type",
+  "attachment",
   "column_break_7zdnc",
   "gearbox",
-  "vehicle_status",
   "year",
   "price",
   "mileage",
+  "section_break_g1piv",
+  "abs",
+  "air_bags",
+  "air_conditioning",
+  "alloy_rims",
+  "apple_carplay",
+  "360_camera",
+  "climate_control",
+  "cruise_control",
+  "drls",
+  "fog_lights",
+  "column_break_wuzdj",
+  "front_camera",
+  "front_speakers",
+  "hud",
+  "heated_seats",
+  "immobilizer_key",
+  "infotainment_system",
+  "keyless_entry",
+  "led_headlights",
+  "paddle_shifters",
+  "panoramic_sunroof",
+  "parking_sensors",
+  "column_break_h7swi",
+  "power_locks",
+  "power_mirrors",
+  "tpms",
+  "sun_roof",
+  "steering_switches",
+  "rear_speakers",
+  "rear_camera",
+  "rear_ac_vents",
+  "push_start",
+  "power_steering",
+  "power_seats",
+  "eta_section",
+  "vehicle_status",
+  "column_break_ynbfw",
+  "eta",
+  "port_section",
+  "from_port",
+  "column_break_g0lnh",
+  "to_port",
   "section_break_xhaif",
   "attachments",
   "section_break_qxbq4",
@@ -166,11 +213,280 @@
    "fieldname": "mileage",
    "fieldtype": "Float",
    "label": "Mileage"
+  },
+  {
+   "fieldname": "variant",
+   "fieldtype": "Link",
+   "label": "Variant",
+   "options": "Variant",
+   "read_only": 1
+  },
+  {
+   "fieldname": "port_section",
+   "fieldtype": "Section Break",
+   "label": "Port"
+  },
+  {
+   "fieldname": "from_port",
+   "fieldtype": "Link",
+   "label": "from port",
+   "options": "Port"
+  },
+  {
+   "fieldname": "column_break_g0lnh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "to_port",
+   "fieldtype": "Link",
+   "label": "to port",
+   "options": "Port"
+  },
+  {
+   "default": "0",
+   "fieldname": "sold",
+   "fieldtype": "Check",
+   "label": "Sold"
+  },
+  {
+   "fieldname": "attachment",
+   "fieldtype": "Attach",
+   "label": "Attachment"
+  },
+  {
+   "fieldname": "section_break_g1piv",
+   "fieldtype": "Section Break",
+   "label": "Features"
+  },
+  {
+   "default": "0",
+   "fieldname": "abs",
+   "fieldtype": "Check",
+   "label": "ABS"
+  },
+  {
+   "default": "0",
+   "fieldname": "air_bags",
+   "fieldtype": "Check",
+   "label": "Air Bags"
+  },
+  {
+   "default": "0",
+   "fieldname": "air_conditioning",
+   "fieldtype": "Check",
+   "label": "Air Conditioning"
+  },
+  {
+   "default": "0",
+   "fieldname": "alloy_rims",
+   "fieldtype": "Check",
+   "label": "Alloy Rims"
+  },
+  {
+   "default": "0",
+   "fieldname": "apple_carplay",
+   "fieldtype": "Check",
+   "label": "Apple CarPlay"
+  },
+  {
+   "default": "0",
+   "fieldname": "360_camera",
+   "fieldtype": "Check",
+   "label": "360 Camera"
+  },
+  {
+   "default": "0",
+   "fieldname": "climate_control",
+   "fieldtype": "Check",
+   "label": "Climate Control"
+  },
+  {
+   "default": "0",
+   "fieldname": "cruise_control",
+   "fieldtype": "Check",
+   "label": "Cruise Control"
+  },
+  {
+   "default": "0",
+   "fieldname": "drls",
+   "fieldtype": "Check",
+   "label": "DRLs"
+  },
+  {
+   "default": "0",
+   "fieldname": "fog_lights",
+   "fieldtype": "Check",
+   "label": "Fog Lights"
+  },
+  {
+   "fieldname": "column_break_wuzdj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "front_camera",
+   "fieldtype": "Check",
+   "label": "Front Camera"
+  },
+  {
+   "default": "0",
+   "fieldname": "front_speakers",
+   "fieldtype": "Check",
+   "label": "Front Speakers"
+  },
+  {
+   "default": "0",
+   "fieldname": "hud",
+   "fieldtype": "Check",
+   "label": "HUD"
+  },
+  {
+   "default": "0",
+   "fieldname": "heated_seats",
+   "fieldtype": "Check",
+   "label": "Heated Seats"
+  },
+  {
+   "default": "0",
+   "fieldname": "immobilizer_key",
+   "fieldtype": "Check",
+   "label": "Immobilizer Key"
+  },
+  {
+   "default": "0",
+   "fieldname": "infotainment_system",
+   "fieldtype": "Check",
+   "label": "Infotainment System"
+  },
+  {
+   "default": "0",
+   "fieldname": "keyless_entry",
+   "fieldtype": "Check",
+   "label": "Keyless Entry"
+  },
+  {
+   "default": "0",
+   "fieldname": "led_headlights",
+   "fieldtype": "Check",
+   "label": "LED Headlights"
+  },
+  {
+   "default": "0",
+   "fieldname": "paddle_shifters",
+   "fieldtype": "Check",
+   "label": "Paddle Shifters"
+  },
+  {
+   "default": "0",
+   "fieldname": "panoramic_sunroof",
+   "fieldtype": "Check",
+   "label": "Panoramic Sunroof"
+  },
+  {
+   "default": "0",
+   "fieldname": "parking_sensors",
+   "fieldtype": "Check",
+   "label": "Parking Sensors"
+  },
+  {
+   "fieldname": "column_break_h7swi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "power_locks",
+   "fieldtype": "Check",
+   "label": "Power Locks"
+  },
+  {
+   "default": "0",
+   "fieldname": "power_mirrors",
+   "fieldtype": "Check",
+   "label": "Power Mirrors"
+  },
+  {
+   "default": "0",
+   "fieldname": "tpms",
+   "fieldtype": "Check",
+   "label": "TPMS"
+  },
+  {
+   "default": "0",
+   "fieldname": "sun_roof",
+   "fieldtype": "Check",
+   "label": "Sun Roof"
+  },
+  {
+   "default": "0",
+   "fieldname": "steering_switches",
+   "fieldtype": "Check",
+   "label": "Steering Switches"
+  },
+  {
+   "default": "0",
+   "fieldname": "rear_speakers",
+   "fieldtype": "Check",
+   "label": "Rear Speakers"
+  },
+  {
+   "default": "0",
+   "fieldname": "rear_camera",
+   "fieldtype": "Check",
+   "label": "Rear Camera"
+  },
+  {
+   "default": "0",
+   "fieldname": "rear_ac_vents",
+   "fieldtype": "Check",
+   "label": "Rear AC Vents"
+  },
+  {
+   "default": "0",
+   "fieldname": "push_start",
+   "fieldtype": "Check",
+   "label": "Push Start"
+  },
+  {
+   "default": "0",
+   "fieldname": "power_steering",
+   "fieldtype": "Check",
+   "label": "Power Steering"
+  },
+  {
+   "default": "0",
+   "fieldname": "power_seats",
+   "fieldtype": "Check",
+   "label": "Power Seats"
+  },
+  {
+   "fieldname": "eta_section",
+   "fieldtype": "Section Break",
+   "label": "ETA"
+  },
+  {
+   "fieldname": "column_break_ynbfw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "eta",
+   "fieldtype": "Link",
+   "label": "ETA",
+   "options": "ETA"
+  },
+  {
+   "fieldname": "lot_number",
+   "fieldtype": "Data",
+   "label": "Lot Number"
+  },
+  {
+   "fieldname": "vin",
+   "fieldtype": "Data",
+   "label": "VIN"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-03-25 18:01:48.862491",
+ "modified": "2026-04-04 20:44:53.585647",
  "modified_by": "Administrator",
  "module": "Cars on Ship",
  "name": "Ad",

@@ -16,10 +16,17 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { getRecentlyViewed, type RecentCar } from "@/lib/recentlyViewed"
-import { addToRecentlyViewed } from "@/lib/recentlyViewed"
 import { useAds,useMakes, useModels, useYears } from "@/hooks/useVehicles";
 import type {Ad , Make, Model, Year } from "@/api/vehicles";
 import AdvancedSearchPanel, { type AdvancedFilters } from "@/components/AdvancedSearchPanel"
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi,
+} from "@/components/ui/carousel";
 // ─── Types ───────────────────────────────────────────────────
 
 interface HeroSectionProps {
@@ -76,9 +83,18 @@ export const HeroSection = ({ onFiltersApplied }: HeroSectionProps) => {
  
   const handleAdvancedSearch = (filters: AdvancedFilters) => {
     console.log("Advanced filters applied:", filters)
-    // TODO: pass filters up to CarsSection via prop/context/store
     onFiltersApplied(filters)  
     setAdvancedOpen(false)
+  }
+
+  const handleQuickSearch = () => {
+    const filters: Partial<AdvancedFilters> = {
+      make: selectedMake,
+      model: selectedModel,
+      yearFrom: selectedYear,
+      yearTo: selectedYear,
+    }
+    onFiltersApplied(filters)
   }
  
   // Close panel on outside click
@@ -191,7 +207,10 @@ export const HeroSection = ({ onFiltersApplied }: HeroSectionProps) => {
           </div>
  
           <div className="flex justify-end mt-4">
-            <button className="flex items-center gap-2 bg-[#FC7844] hover:bg-[#e86a35] text-white font-semibold px-6 py-2.5 rounded text-sm transition-colors duration-200">
+            <button 
+              onClick={handleQuickSearch}
+              className="flex items-center gap-2 bg-[#FC7844] hover:bg-[#e86a35] text-white font-semibold px-6 py-2.5 rounded text-sm transition-colors duration-200"
+            >
               <Search className="w-4 h-4" />
               Search
             </button>
@@ -285,47 +304,83 @@ const HowToBuySection = () => (
 
 // ─── Car Card ─────────────────────────────────────────────────
 const CarCard = ({ car }: { car: Ad }) => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [liked, setLiked] = useState(false);
-  const [imgIndex, setImgIndex] = useState(0);
-  const handleClick = () => {
-    addToRecentlyViewed({
-      name: car.name,
-      make: car.make,
-      model: car.model,
-      year: car.year,
-      images: car.images,
-    })
-    navigate(`/cars/${car.name}`)
-  }
+  
+  // shadcn Carousel API for syncing dots and current slide
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    if (!api) return;
+    
+    // We removed the synchronous setCurrent here.
+    // The initial state is already 0, so we only need to listen for changes.
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap());
+    });
+  }, [api]);
+
+  const handleCardClick = () => {
+    // addToRecentlyViewed({
+    //   name: car.name,
+    //   make: car.make,
+    //   model: car.model,
+    //   year: car.year,
+    //   images: car.images,
+    // });
+    navigate(`/cars/${car.name}`);
+  };
+
   const images = car.images?.length
     ? car.images
     : ["https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=400&q=80"];
 
   return (
-    <div 
-          onClick={handleClick}
-    className="overflow-hidden transition-all duration-200 bg-white border border-gray-100 cursor-pointer rounded-xl hover:shadow-lg group">
-      <div className="relative overflow-hidden">
-        <img
-          src={images[imgIndex]}
-          alt={`${car.make} ${car.model}`}
-          className="object-cover w-full transition-transform duration-300 h-44 group-hover:scale-105"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src =
-              "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=400&q=80";
-          }}
-        />
+    <div className="overflow-hidden transition-all duration-200 bg-white border border-gray-100 rounded-xl hover:shadow-lg group">
+      
+      {/* IMAGE CAROUSEL SECTION */}
+      {/* Added group/carousel to only show arrows when hovering the image area */}
+      <div className="relative overflow-hidden group/carousel">
+        <Carousel setApi={setApi} className="w-full">
+          <CarouselContent>
+            {images.map((src, index) => (
+              <CarouselItem key={index}>
+                <img
+                  src={src}
+                  alt={`${car.make} ${car.model}`}
+                  onClick={handleCardClick}
+                  className="object-cover w-full transition-transform duration-300 cursor-pointer h-44 group-hover:scale-105"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=400&q=80";
+                  }}
+                />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+
+          {/* Navigation Arrows - Styled to float over the image like Airbnb cards */}
+          {images.length > 1 && (
+            <>
+              <CarouselPrevious className="absolute w-8 h-8 transition-opacity -translate-y-1/2 opacity-0 left-2 top-1/2 bg-white/80 backdrop-blur-sm group-hover/carousel:opacity-100" />
+              <CarouselNext className="absolute w-8 h-8 transition-opacity -translate-y-1/2 opacity-0 right-2 top-1/2 bg-white/80 backdrop-blur-sm group-hover/carousel:opacity-100" />
+            </>
+          )}
+        </Carousel>
 
         {/* Image count tag */}
-        <span className="absolute top-2 right-2 bg-[#212123]/80 text-white text-xs px-2 py-0.5 rounded">
-          {imgIndex + 1}/{images.length}
+        <span className="absolute z-10 top-2 right-2 bg-[#212123]/80 text-white text-xs px-2 py-0.5 rounded pointer-events-none">
+          {current + 1}/{images.length}
         </span>
 
         {/* Wishlist */}
         <button
-          onClick={() => setLiked(!liked)}
-          className="absolute flex items-center justify-center w-8 h-8 transition-colors rounded-full top-2 left-2 bg-white/80 backdrop-blur-sm hover:bg-white"
+          onClick={(e) => {
+            e.stopPropagation(); // Prevents click from bubbling up (if nested)
+            setLiked(!liked);
+          }}
+          className="absolute z-10 flex items-center justify-center w-8 h-8 transition-colors rounded-full top-2 left-2 bg-white/80 backdrop-blur-sm hover:bg-white"
         >
           <Heart
             className={`w-4 h-4 transition-colors ${
@@ -336,13 +391,16 @@ const CarCard = ({ car }: { car: Ad }) => {
 
         {/* Dot indicators */}
         {images.length > 1 && (
-          <div className="absolute flex gap-1 -translate-x-1/2 bottom-2 left-1/2">
+          <div className="absolute z-10 flex gap-1 -translate-x-1/2 bottom-2 left-1/2">
             {images.map((_, i) => (
               <button
                 key={i}
-                onClick={() => setImgIndex(i)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  api?.scrollTo(i); // Utilize shadcn API to jump to slide
+                }}
                 className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                  i === imgIndex ? "bg-[#FC7844]" : "bg-white/60"
+                  i === current ? "bg-[#FC7844]" : "bg-white/60 hover:bg-white"
                 }`}
               />
             ))}
@@ -350,7 +408,11 @@ const CarCard = ({ car }: { car: Ad }) => {
         )}
       </div>
 
-      <div className="p-4">
+      {/* TEXT CONTENT SECTION */}
+      <div 
+        className="p-4 cursor-pointer"
+        onClick={handleCardClick}
+      >
         <h4 className="font-bold text-[#212123] text-base tracking-wide">
           {car.make} {car.model} {car.year}
         </h4>
@@ -372,6 +434,7 @@ const CarCard = ({ car }: { car: Ad }) => {
           </span>
         </div>
       </div>
+      
     </div>
   );
 };

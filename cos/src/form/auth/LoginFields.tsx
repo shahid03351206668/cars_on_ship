@@ -4,7 +4,7 @@ import { Button } from "../../components/ui/button";
 import { useLogin } from "../../hooks/useAuth";
 
 export default function LoginFields() {
-  const [form, setForm] = useState({ usr: "", pwd: "" });
+  const [form, setForm] = useState({ usr: "", phone: "" });
   const { mutate: login, isPending, error } = useLogin();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -12,12 +12,13 @@ export default function LoginFields() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // usr = email, pwd will be derived from phone inside loginUser
     login(form);
   };
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1">
+      {/* <div className="flex flex-col gap-1">
         <label className="text-sm font-medium text-gray-700">Email</label>
         <Input
           name="usr"
@@ -27,18 +28,21 @@ export default function LoginFields() {
           onChange={handleChange}
           required
         />
-      </div>
+      </div> */}
 
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-gray-700">Password</label>
+        <label className="text-sm font-medium text-gray-700">Phone Number</label>
         <Input
-          name="pwd"
-          type="password"
-          placeholder="••••••••"
-          value={form.pwd}
+          name="phone"
+          type="tel"
+          placeholder="+92 300 0000000"
+          value={form.phone}
           onChange={handleChange}
           required
         />
+        <p className="text-xs text-gray-400">
+          Your phone number is used to verify your identity.
+        </p>
       </div>
 
       {error && (
@@ -47,7 +51,7 @@ export default function LoginFields() {
         </p>
       )}
 
-      <Button type="submit" disabled={isPending} className="w-full mt-1">
+      <Button type="submit" disabled={isPending} className="w-full mt-1 bg-[#FC7844] hover:bg-[#FC7844]/90 text-white">
         {isPending ? "Signing in…" : "Sign In"}
       </Button>
     </form>

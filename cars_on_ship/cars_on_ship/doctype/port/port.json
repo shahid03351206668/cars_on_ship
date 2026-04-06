@@ -2,29 +2,29 @@
  "actions": [],
  "allow_import": 1,
  "allow_rename": 1,
- "autoname": "field:manufacture",
- "creation": "2026-03-16 14:32:13.033215",
+ "autoname": "field:port",
+ "creation": "2026-04-03 17:41:36.364541",
  "default_view": "List",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "manufacture"
+  "port"
  ],
  "fields": [
   {
-   "fieldname": "manufacture",
+   "fieldname": "port",
    "fieldtype": "Data",
-   "label": "Manufacture",
+   "label": "Port",
    "unique": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-03 18:40:18.798232",
+ "modified": "2026-04-03 17:48:17.582987",
  "modified_by": "Administrator",
  "module": "Cars on Ship",
- "name": "Make",
+ "name": "Port",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
@@ -33,6 +33,7 @@
    "delete": 1,
    "email": 1,
    "export": 1,
+   "import": 1,
    "print": 1,
    "read": 1,
    "report": 1,

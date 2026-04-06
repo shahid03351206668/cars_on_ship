@@ -9,7 +9,12 @@ import SalerLayout from "./components/layout/saler-view/SalerLayout";
 import SalerHome from "./pages/saler/SalerHome";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
 import { useAuthStore } from "./store/auth";
-
+import HelpSupport from "./pages/saler/help-support";
+import Notifications from "./pages/saler/notifications";
+import ProfileSettings from "./pages/saler/profile-settings";
+import WalletPayments from "./pages/saler/wallet";
+import ScrollToTop from "./lib/ScrollToTop";
+import Addcar from "./pages/saler/Addcar";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: { retry: 1, staleTime: 5 * 60 * 1000 },
@@ -24,7 +29,7 @@ function RootRedirect() {
   if (isAuthenticated && user) {
     return (
       <Navigate
-        to={user.role === "Sales User" ? "/saler-home" : "/buyer-home"}
+        to={user.role === "Sales User" ? "/seller" : "/buyer"}
         replace
       />
     );
@@ -35,40 +40,52 @@ function RootRedirect() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-       <BrowserRouter basename={basename}>
-        <Routes>
-          {/* ── Guest routes — wrapped in AppLayout (header + outlet) ── */}
-          <Route element={<AppLayout />}>
-            <Route path="/" element={<RootRedirect />} />
-            <Route path="/cars/:name" element={<AdDetailPage />} />
-          </Route>
+  <BrowserRouter basename={basename}>
+    <ScrollToTop />
+    <Routes>
+      {/* ── Guest routes ── */}
+      <Route element={<AppLayout />}>
+        <Route path="/" element={<RootRedirect />} />
+        <Route path="cars/:name" element={<AdDetailPage />} />
+      </Route>
 
-          {/* ── Buyer (role-guarded) ── */}
-          <Route
-            element={
-              <ProtectedRoute allowedRole="Buyer">
-                <BuyerLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="/buyer-home" element={<BuyerHome />} />
-          </Route>
+      {/* ── Buyer (role-guarded) ── */}
+      <Route
+        path="/buyer"
+        element={
+          <ProtectedRoute allowedRole="Buyer">
+            <BuyerLayout />
+          </ProtectedRoute>
+        }
+      >
+        {/* 'index' matches exactly "/buyer" */}
+        <Route index element={<BuyerHome />} />
+      </Route>
 
-          {/* ── Seller (role-guarded) ── */}
-          <Route
-            element={
-              <ProtectedRoute allowedRole="Sales User">
-                <SalerLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="/saler-home" element={<SalerHome />} />
-          </Route>
+      {/* ── Seller (role-guarded) ── */}
+      <Route
+        path="/seller"
+        element={
+          <ProtectedRoute allowedRole="Sales User">
+            <SalerLayout />
+          </ProtectedRoute>
+        }
+      >
+        {/* 'index' matches exactly "/seller" */}
+        <Route index element={<SalerHome />} />
+        
+        {/* Relative paths (no leading slash) */}
+        <Route path="help-support" element={<HelpSupport />} />
+        <Route path="notifications" element={<Notifications />} />
+        <Route path="profile-settings" element={<ProfileSettings />} />
+        <Route path="wallet" element={<WalletPayments />} />
+        <Route path="addcar" element={<Addcar />} />
+      </Route>
 
-          {/* ── Fallback ── */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </QueryClientProvider>
+      {/* ── Fallback ── */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  </BrowserRouter>
+</QueryClientProvider>
   );
 }

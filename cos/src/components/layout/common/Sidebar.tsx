@@ -12,6 +12,7 @@ import {
 import Header from './Header'
 import { SidebarItem } from './sidebar-item'
 import { useAuthStore, type AuthState } from '@/store/auth'
+import logo from '../../../assets/logo.jfif';
 
 export type SidebarItemType = {
   label: string
@@ -24,7 +25,7 @@ const MenuItems: SidebarItemType[] = [
   { 
     label: 'Dashboard', 
     icon: <House className="w-[18px] h-[18px]" />, 
-    url: '/dashboard' 
+    url: '/seller' 
   },
   { 
     label: 'My Cars', 
@@ -56,11 +57,11 @@ const MenuItems: SidebarItemType[] = [
     icon: <Layers className="w-[18px] h-[18px]" />,
     url: '#',
     children: [
-      { label: 'Wallet / Payments', url: '/app/wallet' },
-      { label: 'Advance Received', url: '/app/advances' },
-      { label: 'Help & Support', url: '/app/support' },
-      { label: 'Notifications', url: '/app/notifications' },
-      { label: 'Profile & Settings', url: '/app/profile' },
+      { label: 'Wallet / Payments', url: '/seller/wallet' },
+      // { label: 'Advance Received', url: '/seller/' },
+      { label: 'Help & Support', url: '/seller/help-support' },
+      { label: 'Notifications', url: '/seller/notifications' },
+      { label: 'Profile & Settings', url: '/seller/profile-settings' },
     ],
   },
 ]
@@ -73,9 +74,14 @@ export function AppLayout({ children }: { children?: React.ReactNode }) {
       {/* Sidebar — fixed width, always expanded, pure black */}
       <aside className="flex flex-col w-[210px] shrink-0 bg-[#1a1a1a] text-white">
         {/* Brand */}
-        <div className="flex h-14 shrink-0 items-center px-4 border-b border-white/[0.08]">
+        <div className="flex h-14 shrink-0 items-center px-4 border-b border-white/[0.08] bg-white" >
           {/* Replace with actual logo/brand component */}
-          <span className="text-sm font-semibold tracking-wide text-white">
+          <img 
+        src={logo} 
+        alt="Company Logo" 
+        className="object-contain w-10 h-10" 
+      />
+          <span className="text-sm font-semibold tracking-wide text-black">
             Cars on Ship
           </span>
         </div>

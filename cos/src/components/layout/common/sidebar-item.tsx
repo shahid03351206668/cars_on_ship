@@ -42,11 +42,12 @@ export function SidebarItem({ item }: SidebarItemProps) {
               <NavLink
                 key={index}
                 to={child.url}
+                end  // ← Add here too
                 className={({ isActive }: { isActive: boolean }) =>
                   `flex items-center gap-2 rounded-md px-3 py-[7px] text-[13px] transition-colors ${
                     isActive
-                      ? 'bg-white/[0.12] text-white font-medium'
-                      : 'text-white/50 hover:bg-white/[0.08] hover:text-white'
+                      ? 'bg-white text-black font-medium'
+                      : 'text-white hover:bg-white/[0.08] hover:text-white'
                   }`
                 }
               >
@@ -67,18 +68,27 @@ export function SidebarItem({ item }: SidebarItemProps) {
   return (
     <NavLink
       to={item.url}
+      end  // ← Add this line
       className={({ isActive }: { isActive: boolean }) =>
         `flex items-center gap-3 px-3 py-[9px] text-[13px] font-medium transition-colors rounded-md ${
           isActive
-            ? '!text-white bg-white/[0.12]'
+            ? 'bg-white'
             : 'text-white/60 hover:bg-white/[0.08] hover:text-white'
         }`
       }
     >
-      <span className="flex items-center justify-center w-[18px] h-[18px] shrink-0 text-white/50">
-        {item.icon}
-      </span>
-      <span className="truncate">{item.label}</span>
+      {({ isActive }: { isActive: boolean }) => (
+        <>
+          <span className={`flex items-center justify-center w-[18px] h-[18px] shrink-0 transition-colors ${
+            isActive ? 'text-black' : 'text-white/50'
+          }`}>
+            {item.icon}
+          </span>
+          <span className={`truncate ${isActive ? 'text-black' : ''}`}>
+            {item.label}
+          </span>
+        </>
+      )}
     </NavLink>
   )
 }

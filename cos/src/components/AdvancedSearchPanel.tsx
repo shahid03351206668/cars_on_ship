@@ -1,21 +1,23 @@
-import { useState, useCallback } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 import { ChevronDown, ChevronUp, RotateCcw, Search, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   useMakes,
   useModels,
+  useVariants,
   useYears,
+  usePorts,
   useVehicleStatuses,
-    useGearboxes,
-    useBodyTypes,
-    useColours,
-    useDoorOptions,
-    useSeatOptions,
-    useFuelTypes,
-    useAccelerationRanges,
-    useDriveTypes,
-    useBootSpaces,
-    useSellerTypes,
+  useGearboxes,
+  useBodyTypes,
+  useColours,
+  useDoorOptions,
+  useSeatOptions,
+  useFuelTypes,
+  useAccelerationRanges,
+  useDriveTypes,
+  useBootSpaces,
+  useSellerTypes,
 } from "@/hooks/useVehicles"
 import type { BodyType, Colour } from "@/api/vehicles"
 
@@ -24,6 +26,7 @@ import type { BodyType, Colour } from "@/api/vehicles"
 export interface AdvancedFilters {
   make: string
   model: string
+  variant: string
   yearFrom: string
   yearTo: string
   priceFrom: string
@@ -31,6 +34,10 @@ export interface AdvancedFilters {
   mileageFrom: string
   mileageTo: string
   eta: string
+  fromPort: string
+  toPort: string
+  fromPostingDate: string
+  toPostingDate: string
   vehicleStatuses: string[]
   gearboxes: string[]
   bodyTypes: string[]
@@ -47,10 +54,11 @@ export interface AdvancedFilters {
 }
 
 const EMPTY_FILTERS: AdvancedFilters = {
-  make: "", model: "", yearFrom: "", yearTo: "",
+  make: "", model: "",variant:"", yearFrom: "", yearTo: "",
   priceFrom: "", priceTo: "",
   mileageFrom: "", mileageTo: "",
-  eta: "", vehicleStatuses: [], gearboxes: [],
+  eta: "", fromPort: "", toPort: "", fromPostingDate: "", toPostingDate: "",
+  vehicleStatuses: [], gearboxes: [],
   bodyTypes: [], colours: [], doors: [], seats: [],
   fuelTypes: [], accelerations: [], driveTypes: [],
   bootSpaces: [], sellerTypes: [],
@@ -84,6 +92,11 @@ function SelectField({
   options: { value: string; label: string }[]
   disabled?: boolean
 }) {
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onChange("")
+  }
+
   return (
     <div className="flex-1 min-w-0">
       {label && <p className="mb-1 text-[10px] font-medium text-gray-400 uppercase tracking-wide">{label}</p>}
@@ -99,7 +112,193 @@ function SelectField({
             <option key={o.value} value={o.value}>{o.label}</option>
           ))}
         </select>
-        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5 pointer-events-none">
+          {value && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="text-gray-400 hover:text-gray-600 transition-colors p-0.5 pointer-events-auto"
+              title="Clear selection"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+          <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Searchable Select Field ──────────────────────────────────
+
+function SearchableSelectField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  options,
+  disabled,
+  loading,
+}: {
+  label?: string
+  value: string
+  onChange: (v: string) => void
+  placeholder: string
+  options: { value: string; label: string }[]
+  disabled?: boolean
+  loading?: boolean
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
+  const containerRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const filteredOptions = options.filter((opt) =>
+    opt.label.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const selectedLabel = options.find((opt) => opt.value === value)?.label || ""
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside)
+      return () => document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [isOpen])
+
+  // Focus input when dropdown opens
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [isOpen])
+
+  const handleSelect = (optValue: string) => {
+    onChange(optValue)
+    setIsOpen(false)
+    setSearchTerm("")
+  }
+
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onChange("")
+    setSearchTerm("")
+  }
+
+  return (
+    <div className="flex-1 min-w-0" ref={containerRef}>
+      {label && <p className="mb-1 text-[10px] font-medium text-gray-400 uppercase tracking-wide">{label}</p>}
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => !disabled && setIsOpen(!isOpen)}
+          disabled={disabled || loading}
+          className="w-full text-left bg-white border border-gray-200 text-gray-700 text-sm rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#FC7844] focus:border-[#FC7844] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-between"
+        >
+          <span className={selectedLabel ? "text-gray-700" : "text-gray-400"}>{selectedLabel || placeholder}</span>
+          <div className="flex items-center gap-1">
+            {value && (
+              <button
+                type="button"
+                onClick={handleClear}
+                className="text-gray-400 hover:text-gray-600 transition-colors p-0.5"
+                title="Clear selection"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+            <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+          </div>
+        </button>
+
+        {isOpen && (
+          <div className="absolute left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-md shadow-lg top-full">
+            {/* Search Input */}
+            <div className="p-2 border-b border-gray-100">
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#FC7844] focus:border-[#FC7844]"
+              />
+            </div>
+
+            {/* Options List */}
+            <div className="overflow-y-auto max-h-48">
+              {loading ? (
+                <div className="p-3 text-sm text-center text-gray-500">Loading...</div>
+              ) : filteredOptions.length === 0 ? (
+                <div className="p-3 text-sm text-center text-gray-500">No results found</div>
+              ) : (
+                filteredOptions.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => handleSelect(opt.value)}
+                    className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                      value === opt.value
+                        ? "bg-orange-50 text-[#FC7844] font-medium"
+                        : "text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function DateField({
+  label, value, onChange, placeholder, disabled,
+}: {
+  label?: string
+  value: string
+  onChange: (v: string) => void
+  placeholder: string
+  disabled?: boolean
+}) {
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onChange("")
+  }
+
+  return (
+    <div className="flex-1 min-w-0">
+      {label && <p className="mb-1 text-[10px] font-medium text-gray-400 uppercase tracking-wide">{label}</p>}
+      <div className="relative">
+        <input
+          type="date"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={disabled}
+          placeholder={placeholder}
+          className="w-full bg-white border border-gray-200 text-gray-700 text-sm rounded-md px-3 py-2 pr-8 focus:outline-none focus:ring-1 focus:ring-[#FC7844] focus:border-[#FC7844] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+        />
+        {value && (
+          <button
+            type="button"
+            onClick={handleClear}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-0.5"
+            title="Clear selection"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
     </div>
   )
@@ -229,6 +428,30 @@ function RangeRow({
   )
 }
 
+// ─── Date Range Row ───────────────────────────────────────────
+
+function DateRangeRow({
+  label,
+  fromValue, onFromChange, fromPlaceholder,
+  toValue, onToChange, toPlaceholder,
+}: {
+  label: string
+  fromValue: string; onFromChange: (v: string) => void
+  fromPlaceholder: string
+  toValue: string; onToChange: (v: string) => void
+  toPlaceholder: string
+}) {
+  return (
+    <div className="mt-3">
+      <p className="mb-1.5 text-[10px] font-medium text-gray-400 uppercase tracking-wide">{label}</p>
+      <div className="flex gap-2">
+        <DateField value={fromValue} onChange={onFromChange} placeholder={fromPlaceholder} />
+        <DateField value={toValue} onChange={onToChange} placeholder={toPlaceholder} />
+      </div>
+    </div>
+  )
+}
+
 // ─── Section wrapper with open/close state ────────────────────
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -252,9 +475,11 @@ export default function AdvancedSearchPanel({ onSearch, onClose }: Props) {
   const [filters, setFilters] = useState<AdvancedFilters>(EMPTY_FILTERS)
 
   // data hooks
-  const { data: makes } = useMakes()
+  const { data: makes, isLoading: makesLoading } = useMakes()
   const { data: models, isLoading: modelsLoading } = useModels(filters.make)
+  const { data: variants, isLoading: variantsLoading } = useVariants(filters.model)
   const { data: years } = useYears()
+  const { data: ports, isLoading: portsLoading } = usePorts()
   const { data: vehicleStatuses, isLoading: vsLoading } = useVehicleStatuses()
   const { data: gearboxes, isLoading: gbLoading } = useGearboxes()
   const { data: bodyTypes, isLoading: btLoading } = useBodyTypes()
@@ -280,9 +505,12 @@ export default function AdvancedSearchPanel({ onSearch, onClose }: Props) {
   const reset = () => setFilters(EMPTY_FILTERS)
 
   // Year options from API
-  const yearOptions = (years ?? []).map((y) => ({ value: y.year, label: y.year }))
+  const yearOptions = (years ?? []).map((y) => ({ value: String(y.year), label: String(y.year) }))
 
-  // Price options (static ranges) - Convert to string
+  // Port options from API
+  const portOptions = (ports ?? []).map((p) => ({ value: p.name, label: p.name }))
+
+  // Price options (static ranges)
   const priceOptions = [500, 1000, 2000, 3000, 5000, 8000, 10000, 15000, 20000, 30000, 50000].map(
     (p) => ({ value: String(p), label: `$${p.toLocaleString()}` })
   )
@@ -346,20 +574,31 @@ export default function AdvancedSearchPanel({ onSearch, onClose }: Props) {
         {/* Make & Model */}
         <Section title="Make & Model">
           <div className="flex gap-2 mt-3">
-            <SelectField
+            <SearchableSelectField
               label="Make"
               value={filters.make}
-              onChange={(v) => { set("make", v); set("model", "") }}
+              onChange={(v) => { set("make", v); set("model", ""); set("variant", "") }}
               placeholder="Select Make"
               options={(makes ?? []).map((m) => ({ value: m.name, label: m.name }))}
+              loading={makesLoading}
             />
-            <SelectField
+            <SearchableSelectField
               label="Model"
               value={filters.model}
-              onChange={(v) => set("model", v)}
+              onChange={(v) => { set("model", v); set("variant", "") }}
               placeholder={!filters.make ? "Select Make first" : "Select Model"}
               options={(models ?? []).map((m) => ({ value: m.name, label: m.name }))}
               disabled={!filters.make || modelsLoading}
+              loading={modelsLoading}
+            />
+            <SearchableSelectField
+              label="Variant"
+              value={filters.variant}
+              onChange={(v) => set("variant", v)}
+              placeholder={!filters.model ? "Select Model first" : "Select Variant"}
+              options={(variants ?? []).map((m) => ({ value: m.name, label: m.name }))}
+              disabled={!filters.model || variantsLoading}
+              loading={variantsLoading}
             />
           </div>
         </Section>
@@ -369,10 +608,10 @@ export default function AdvancedSearchPanel({ onSearch, onClose }: Props) {
           <RangeRow
             label="From – To"
             fromValue={filters.yearFrom} onFromChange={(v) => set("yearFrom", v)}
-            fromOptions={yearOptions.map((y) => ({ value: String(y.value), label: String(y.label) }))}
+            fromOptions={yearOptions}
             fromPlaceholder="From"
             toValue={filters.yearTo} onToChange={(v) => set("yearTo", v)}
-            toOptions={yearOptions.map((y) => ({ value: String(y.value), label: String(y.label) }))}
+            toOptions={yearOptions}
             toPlaceholder="To"
           />
         </Section>
@@ -413,6 +652,41 @@ export default function AdvancedSearchPanel({ onSearch, onClose }: Props) {
               options={etaOptions}
             />
           </div>
+        </Section>
+
+        {/* Port Range */}
+        <Section title="Port">
+          <div className="flex gap-2 mt-3">
+            <SearchableSelectField
+              label="From Port"
+              value={filters.fromPort}
+              onChange={(v) => set("fromPort", v)}
+              placeholder="Departure Port"
+              options={portOptions}
+              disabled={portsLoading}
+              loading={portsLoading}
+            />
+            <SearchableSelectField
+              label="To Port"
+              value={filters.toPort}
+              onChange={(v) => set("toPort", v)}
+              placeholder="Destination Port"
+              options={portOptions}
+              disabled={portsLoading}
+              loading={portsLoading}
+            />
+          </div>
+        </Section>
+
+        {/* Posting Date Range */}
+        <Section title="Posted Date">
+          <DateRangeRow
+            label="From – To"
+            fromValue={filters.fromPostingDate} onFromChange={(v) => set("fromPostingDate", v)}
+            fromPlaceholder="From Date"
+            toValue={filters.toPostingDate} onToChange={(v) => set("toPostingDate", v)}
+            toPlaceholder="To Date"
+          />
         </Section>
 
         {/* Vehicle Status */}

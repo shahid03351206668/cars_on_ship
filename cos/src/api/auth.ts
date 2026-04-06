@@ -1,86 +1,182 @@
-// ─── Types ────────────────────────────────────────────────────
-
 export type UserRole = "Buyer" | "Sales User";
 
 export interface RegisterPayload {
-  first_name: string;
-  last_name: string;
+  user_name: string;
   email: string;
-  mobile_no: string;
-  new_password: string;
+  phone: string;
   role: UserRole;
 }
 
 export interface LoginPayload {
   usr: string;
-  pwd: string;
 }
 
 export interface AuthUser {
+  name: string;
+  sid: string;
+  username: string;
   email: string;
-  full_name: string;
+  user_image: string | null;
   role: UserRole;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────
+// ─── Base URL ─────────────────────────────────────────────────
+const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
 
+// ─── Read sid from persisted Zustand store ────────────────────
+export const getStoredSid = (): string | null => {
+  try {
+    const raw = localStorage.getItem("cos-auth");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { state?: { sid?: string } };
+    return parsed?.state?.sid ?? null;
+  } catch {
+    return null;
+  }
+};
+
+// ─── CSRF Token ───────────────────────────────────────────────
 const getCsrfToken = (): string => {
   const match = document.cookie.match(/csrftoken=([^;]+)/);
   return match ? match[1] : "fetch";
 };
 
-const postJSON = async <T>(url: string, body: Record<string, unknown>): Promise<T> => {
-  const res = await fetch(url, {
+// ─── Error Parser ─────────────────────────────────────────────
+const parseError = (data: Record<string, unknown>): string | null => {
+  if (data._server_messages) {
+    try {
+      const messages = JSON.parse(data._server_messages as string);
+      const inner = JSON.parse(messages[0]);
+      return inner.message;
+    } catch {
+      return String(data._server_messages);
+    }
+  }
+  if (data.exception) return String(data.exception);
+  return null;
+};
+
+// ─── Public POST (login, register — no auth needed) ───────────
+export const postForm = async <T>(
+  path: string,
+  body: Record<string, unknown>
+): Promise<T> => {
+  const params = new URLSearchParams();
+  for (const [k, v] of Object.entries(body)) {
+    if (v !== undefined && v !== null) params.append(k, String(v));
+  }
+
+  const res = await fetch(`${BASE_URL}${path}`, {
     method: "POST",
     credentials: "include",
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": "application/x-www-form-urlencoded",
       "X-Frappe-CSRF-Token": getCsrfToken(),
     },
-    body: JSON.stringify(body),
+    body: params.toString(),
   });
 
   const data = await res.json();
+  const errMsg = parseError(data);
+  if (errMsg) throw new Error(errMsg);
 
-  if (!res.ok) {
-    let msg = "Something went wrong";
-    if (data?._server_messages) {
-      try {
-        const parsed = JSON.parse(data._server_messages);
-        const inner = JSON.parse(parsed[0]);
-        msg = inner.message ?? msg;
-      } catch {
-        msg = data._server_messages;
-      }
-    } else if (data?.exception) {
-      msg = data.exception;
-    }
-    throw new Error(msg);
+  const msg = data?.message;
+  if (msg?.success === false || msg?.success_key === 0) {
+    throw new Error(msg?.message ?? "Something went wrong");
+  }
+  if (!res.ok) throw new Error("Server Error");
+
+  return msg as T;
+};
+
+// ─── Authenticated POST (attaches sid in header) ──────────────
+export const authPost = async <T>(
+  path: string,
+  body: Record<string, unknown>
+): Promise<T> => {
+  const sid = getStoredSid();
+
+  const params = new URLSearchParams();
+  for (const [k, v] of Object.entries(body)) {
+    if (v !== undefined && v !== null) params.append(k, String(v));
   }
 
-  return data.message as T;
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "X-Frappe-CSRF-Token": getCsrfToken(),
+      ...(sid ? { "X-Frappe-Session-Id": sid } : {}),
+    },
+    body: params.toString(),
+  });
+
+  const data = await res.json();
+  const errMsg = parseError(data);
+  if (errMsg) throw new Error(errMsg);
+
+  const msg = data?.message;
+  if (msg?.success === false || msg?.success_key === 0) {
+    throw new Error(msg?.message ?? "Something went wrong");
+  }
+  if (!res.ok) throw new Error("Server Error");
+
+  return msg as T;
+};
+
+// ─── Authenticated GET ────────────────────────────────────────
+export const authGet = async <T>(
+  path: string,
+  params?: Record<string, string>
+): Promise<T> => {
+  const sid = getStoredSid();
+  const query = params ? "?" + new URLSearchParams(params).toString() : "";
+
+  const res = await fetch(`${BASE_URL}${path}${query}`, {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "X-Frappe-CSRF-Token": getCsrfToken(),
+      ...(sid ? { "X-Frappe-Session-Id": sid } : {}),
+    },
+  });
+
+  const data = await res.json();
+  const errMsg = parseError(data);
+  if (errMsg) throw new Error(errMsg);
+
+  const msg = data?.message;
+  if (msg?.success === false || msg?.success_key === 0) {
+    throw new Error(msg?.message ?? "Something went wrong");
+  }
+  if (!res.ok) throw new Error("Server Error");
+
+  return msg as T;
 };
 
 // ─── Register ─────────────────────────────────────────────────
-// Returns AuthUser directly — no second API call needed
-
-export const registerUser = async (payload: RegisterPayload): Promise<AuthUser> => {
-  return postJSON<AuthUser>("/api/method/cars_on_ship.api.register_user", {
-    first_name: payload.first_name,
-    last_name: payload.last_name,
+export const registerUser = async (
+  payload: RegisterPayload
+): Promise<{ success: boolean; message: string }> => {
+  return postForm("/api/method/cars_on_ship.authentication.create_user", {
+    user: payload.user_name,
     email: payload.email,
-    mobile_no: payload.mobile_no,
-    new_password: payload.new_password,
+    phone: payload.phone,
     role: payload.role,
   });
 };
 
 // ─── Login ────────────────────────────────────────────────────
-// Uses our custom endpoint — verifies password and returns AuthUser directly
-
-export const loginUser = async (payload: LoginPayload): Promise<AuthUser> => {
-  return postJSON<AuthUser>("/api/method/cars_on_ship.api.login_user", {
-    usr: payload.usr,
-    pwd: payload.pwd,
+export const loginUser = async (
+  payload: LoginPayload & { phone: string }
+): Promise<AuthUser> => {
+  const result = await postForm<{
+    success: boolean;
+    message: string;
+    data: AuthUser;
+  }>("/api/method/cars_on_ship.authentication.login", {
+    usr: payload.phone,
   });
+  return result.data;
 };

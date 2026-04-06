@@ -1,30 +1,29 @@
 {
  "actions": [],
- "allow_import": 1,
  "allow_rename": 1,
- "autoname": "field:manufacture",
- "creation": "2026-03-16 14:32:13.033215",
+ "autoname": "field:eta",
+ "creation": "2026-04-04 20:05:54.449227",
  "default_view": "List",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "manufacture"
+  "eta"
  ],
  "fields": [
   {
-   "fieldname": "manufacture",
+   "fieldname": "eta",
    "fieldtype": "Data",
-   "label": "Manufacture",
+   "label": "ETA",
    "unique": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-03 18:40:18.798232",
+ "modified": "2026-04-04 20:06:09.359902",
  "modified_by": "Administrator",
  "module": "Cars on Ship",
- "name": "Make",
+ "name": "ETA",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
