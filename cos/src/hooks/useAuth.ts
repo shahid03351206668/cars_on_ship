@@ -1,20 +1,17 @@
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { loginUser, registerUser } from "../api/auth";
-import type { LoginPayload, RegisterPayload, UserRole, AuthUser } from "../api/auth";
+import type { LoginPayload, RegisterPayload, AuthUser } from "../api/auth";
 import { useAuthStore } from "../store/auth";
 
 
 // ─── Helpers ──────────────────────────────────────────────────
 
-// Role is not returned from backend — derive from stored user or default to Buyer
-const roleToRoute = (role: UserRole): string =>
-  role === "Sales User" ? "/seller" : "/buyer";
 
 // ─── useLogin ─────────────────────────────────────────────────
 
 export const useLogin = () => {
-  const setUser = useAuthStore((s) => s.setUser);
+  const setUser = useAuthStore((s: { setUser: (user: AuthUser) => void }) => s.setUser);
   const navigate = useNavigate();
 
   return useMutation({
@@ -45,7 +42,7 @@ export const useRegister = () => {
 // ─── useLogout ────────────────────────────────────────────────
 
 export const useLogout = () => {
-  const logout = useAuthStore((s) => s.logout);
+  const logout = useAuthStore((s: { logout: () => void }) => s.logout);
   const navigate = useNavigate();
 
   return () => {

@@ -28,20 +28,20 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 // ─── Types ───────────────────────────────────────────────────
-
+ 
 interface HeroSectionProps {
-  onFiltersApplied: (filters: AdvancedFilters) => void
+  onFiltersApplied: (filters: AdvancedFilters | Partial<AdvancedFilters>) => void
 }
 interface CarsSectionProps {
   filters?: Partial<AdvancedFilters>
 }
-
-
+ 
+ 
 // ─── Japan Clock ─────────────────────────────────────────────
 const JapanClock = () => {
   const [time, setTime] = useState("");
   const [dateStr, setDateStr] = useState("");
-
+ 
   useEffect(() => {
     const update = () => {
       const now = new Date();
@@ -56,7 +56,7 @@ const JapanClock = () => {
     const id = setInterval(update, 1000);
     return () => clearInterval(id);
   }, []);
-
+ 
   return (
     <span className="flex items-center gap-1.5">
       <Clock className="w-3.5 h-3.5 text-gray-400" />
@@ -66,11 +66,11 @@ const JapanClock = () => {
     </span>
   );
 };
-
-
-
+ 
+ 
+ 
 export const HeroSection = ({ onFiltersApplied }: HeroSectionProps) => {
-
+ 
   const [selectedMake, setSelectedMake] = useState("")
   const [selectedModel, setSelectedModel] = useState("")
   const [selectedYear, setSelectedYear] = useState("")
@@ -86,16 +86,17 @@ export const HeroSection = ({ onFiltersApplied }: HeroSectionProps) => {
     onFiltersApplied(filters)  
     setAdvancedOpen(false)
   }
-
+ 
   const handleQuickSearch = () => {
     const filters: Partial<AdvancedFilters> = {
-      make: selectedMake,
-      model: selectedModel,
-      yearFrom: selectedYear,
-      yearTo: selectedYear,
+      make: selectedMake || undefined,
+      model: selectedModel || undefined,
+      yearFrom: selectedYear || undefined,
+      yearTo: selectedYear || undefined,
     }
     onFiltersApplied(filters)
   }
+
  
   // Close panel on outside click
   useEffect(() => {
