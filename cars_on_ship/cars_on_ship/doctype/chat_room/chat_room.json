@@ -1,0 +1,79 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "prompt",
+ "creation": "2026-04-20 21:16:52.311236",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "room_id",
+  "sales_user",
+  "buyer",
+  "ad",
+  "status",
+  "last_message_at"
+ ],
+ "fields": [
+  {
+   "fieldname": "room_id",
+   "fieldtype": "Data",
+   "label": "Room Id"
+  },
+  {
+   "fieldname": "sales_user",
+   "fieldtype": "Link",
+   "label": "Sales User",
+   "options": "User"
+  },
+  {
+   "fieldname": "buyer",
+   "fieldtype": "Link",
+   "label": "Buyer",
+   "options": "User"
+  },
+  {
+   "fieldname": "ad",
+   "fieldtype": "Link",
+   "label": "Ad",
+   "options": "Ad"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "\nOpen\nClosed\nArchieved"
+  },
+  {
+   "fieldname": "last_message_at",
+   "fieldtype": "Datetime",
+   "label": "last message at"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-04-21 16:12:15.040093",
+ "modified_by": "Administrator",
+ "module": "Cars on Ship",
+ "name": "Chat Room",
+ "naming_rule": "Set by user",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

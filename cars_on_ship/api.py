@@ -1,105 +1,10 @@
 import frappe
 from frappe.utils.password import update_password, check_password
+import json
 
 #-----------------------------  kace api    -----------------------------------------------#
 
 #-----------------------------  kace api    -----------------------------------------------#
-
-@frappe.whitelist(allow_guest=True)
-def get_makes():
-    """Fetch all available Car Makes"""
-    return frappe.get_all("Make", fields=["name"])
-
-
-@frappe.whitelist(allow_guest=True)
-def get_models(make=None):
-    """Fetch models, optionally filtered by a specific make"""
-    filters = {"make": make} if make else {}
-    return frappe.get_all("Model", fields=["name", "make"], filters=filters)
-
-@frappe.whitelist(allow_guest=True)
-def get_variants(model=None):
-    """Fetch variants, optionally filtered by a specific model"""
-    filters = {"model": model} if model else {}
-    return frappe.get_all("Variant", fields=["name", "model"], filters=filters)
-
-
-@frappe.whitelist(allow_guest=True)
-def get_years():
-    """Fetch years for the primary search and advanced range filters"""
-    return frappe.get_all("Year", fields=["name", "year"], order_by="year desc")
-
-
-@frappe.whitelist(allow_guest=True)
-def get_ports():
-    """Fetch all available ports"""
-    return frappe.get_all("Port", fields=["name"])
-
-
-@frappe.whitelist(allow_guest=True)
-def get_vehicle_statuses():
-    """Fetch statuses like 'At Sea', 'Landed', etc."""
-    return frappe.get_all("Vehicle Status", fields=["name"])
-
-
-@frappe.whitelist(allow_guest=True)
-def get_gearboxes():
-    """Fetch transmission types (Automatic, Manual, etc.)"""
-    return frappe.get_all("Gearbox", fields=["name"])
-
-
-@frappe.whitelist(allow_guest=True)
-def get_body_types():
-    """Fetch body styles (SUV, Sedan, Hatchback, etc.)"""
-    return frappe.get_all("Body type", fields=["name"])
-
-
-@frappe.whitelist(allow_guest=True)
-def get_colours():
-    """Fetch available car colors"""
-    return frappe.get_all("Colour", fields=["name","color_code"])
-
-
-@frappe.whitelist(allow_guest=True)
-def get_door_options():
-    """Fetch door count options (2, 4, 5, etc.)"""
-    return frappe.get_all("Doors", fields=["name"])
-
-
-@frappe.whitelist(allow_guest=True)
-def get_seat_options():
-    """Fetch seating capacity options"""
-    return frappe.get_all("Seats", fields=["name"])
-
-
-@frappe.whitelist(allow_guest=True)
-def get_fuel_types():
-    """Fetch engine fuel categories (Petrol, Diesel, Hybrid, Electric)"""
-    return frappe.get_all("Fuel type", fields=["name"])
-
-
-@frappe.whitelist(allow_guest=True)
-def get_acceleration_ranges():
-    """Fetch acceleration brackets (e.g., 0-62mph times)"""
-    return frappe.get_all("Acceleration", fields=["name"])
-
-
-@frappe.whitelist(allow_guest=True)
-def get_drive_types():
-    """Fetch drivetrain options (AWD, FWD, RWD)"""
-    return frappe.get_all("Drive type", fields=["name"])
-
-
-@frappe.whitelist(allow_guest=True)
-def get_boot_spaces():
-    """Fetch trunk/boot capacity categories"""
-    return frappe.get_all("Boot space", fields=["name"])
-
-
-@frappe.whitelist(allow_guest=True)
-def get_seller_types():
-    """Fetch seller categories (Private, Dealer, etc.)"""
-    return frappe.get_all("Seller type", fields=["name"])
 
 
 @frappe.whitelist(allow_guest=True)
@@ -238,6 +143,7 @@ def get_ad(
             a.description,
             a.from_port,
             a.to_port,
+            a.chassis_number,
             GROUP_CONCAT(ab.image) as images
         FROM `tabAd` a
         LEFT JOIN `tabAd detail` ab ON a.name = ab.parent
@@ -260,12 +166,8 @@ def get_ad(
 def get_ad_detail(name):
     data = frappe.db.sql("""
         SELECT
-            a.name, a.user, a.seller_type, a.boot_space,
-            a.make, a.model, a.colour, a.colour_code,
-            a.body_type, a.vehicle_status, a.year, a.acceleration,
-            a.fuel_type, a.seats, a.doors, a.gearbox, a.description,
-            a.price, a.mileage, a.drive_type, a.from_port, a.to_port,
-            GROUP_CONCAT(ab.image ORDER BY ab.idx) as images
+            a.*,
+            GROUP_CONCAT(ab.image SEPARATOR '||') as images
         FROM `tabAd` a
         LEFT JOIN `tabAd detail` ab ON a.name = ab.parent
         WHERE a.name = %(name)s
@@ -276,7 +178,20 @@ def get_ad_detail(name):
         frappe.throw("Ad not found", frappe.DoesNotExistError)
 
     row = data[0]
-    row["images"] = row["images"].split(",") if row["images"] else []
+
+    # ✅ safe split
+    row["images"] = row["images"].split("||") if row["images"] else []
+
+    # ✅ features (fixed)
+    features = frappe.get_all(
+        "Ad Features",
+        filters={"parent": name},
+        fields=["features"],
+        order_by="idx"
+    )
+
+    row["features"] = [f.feature for f in features]
+
     return row
 
 
@@ -285,7 +200,7 @@ def get_userwise_ad():
     user = frappe.session.user
     data = frappe.db.sql("""
         SELECT
-            a.name, a.user, a.seller_type, a.boot_space,
+            a.chassis number,a.name,a.sold,a.user, a.seller_type, a.boot_space,
             a.make, a.model, a.colour, a.colour_code,
             a.body_type, a.vehicle_status, a.year, a.acceleration,
             a.fuel_type, a.seats, a.doors, a.gearbox, a.description,
@@ -297,3 +212,348 @@ def get_userwise_ad():
         GROUP BY a.name
     """, values={"user": user}, as_dict=1, debug=1)
     return data
+
+
+
+
+@frappe.whitelist()
+def get_my_profile():
+    user = frappe.session.user
+    
+    if user == "Guest":
+        frappe.throw("Not logged in", frappe.AuthenticationError)
+    
+    profile = frappe.db.get_value(
+        "Saler Profile",
+        filters={"user": user},
+        fieldname=[
+            "name", "user", "full_name", "email", "phone",
+            "date_of_birth", "nationality", "default_port", "shipping_address",
+            "billing_address", "preffered_shipping_route",
+            "two_factor_authentication", "verification"
+        ],
+        as_dict=True
+    )
+    
+    if not profile:
+        frappe.throw("Profile not found", frappe.DoesNotExistError)
+    
+    return profile
+
+
+
+
+
+@frappe.whitelist()
+def get_favorite_ads():
+    """Get all favorite ads for the current user"""
+    user = frappe.session.user
+    
+    # Fetch all enabled favorite ads for this user
+    favorites = frappe.get_list(
+        "Favourite Ad",
+        filters={"user": user, "enable": 1},
+        fields=["name", "ad", "user", "enable"]
+    )
+    
+    return favorites
+
+ 
+@frappe.whitelist()
+def toggle_favorite():
+    """Toggle favorite status for an ad"""
+    resp = frappe._dict(json.loads(frappe.request.data))
+    frappe.log_error("Toggle Favorite API", f"Received: {resp}")
+    
+    user = frappe.session.user
+    enable_bool = 1 if resp.enable == "true" else 0
+    
+    # Check if favorite record exists
+    favorite = frappe.db.exists("Favourite Ad", {"user": user, "ad": resp.ad})
+    
+    if favorite:
+        doc = frappe.get_doc("Favourite Ad", favorite)
+        doc.enable = enable_bool
+        doc.save(ignore_permissions=True)
+    else:
+        frappe.get_doc({
+            "doctype": "Favourite Ad",
+            "user": user,
+            "ad": resp.ad,
+            "enable": enable_bool
+        }).insert(ignore_permissions=True)
+    
+    return {"status": "success", "is_enabled": bool(enable_bool)}
+
+@frappe.whitelist()
+def create_offer():
+    """Create an offer for an ad or update existing offer"""
+    resp = frappe._dict(json.loads(frappe.request.data))
+    frappe.log_error("Create Offer API", f"Received: {resp}")
+    
+    user = frappe.session.user
+    amount = float(resp.amount)
+    ad_name = resp.ad
+    
+    # Validate ad exists
+    if not frappe.db.exists("Ad", ad_name):
+        frappe.throw(f"Ad '{ad_name}' not found", frappe.DoesNotExistError)
+    
+    # Validate amount
+    if amount <= 0:
+        frappe.throw("Offer amount must be greater than 0", frappe.ValidationError)
+    
+    # Check if offer already exists for this user and ad
+    existing_offer = frappe.db.exists("Offer", {"user": user, "ad": ad_name})
+    
+    if existing_offer:
+        # Update existing offer
+        offer = frappe.get_doc("Offer", existing_offer)
+        offer.amount = amount
+        offer.save(ignore_permissions=True)
+        frappe.db.commit()
+        
+        return {
+            "status": "success",
+            "offer_id": offer.name,
+            "message": f"Offer updated to PKR {amount:,.0f}",
+            "action": "updated"
+        }
+    else:
+        # Create new offer
+        offer = frappe.get_doc({
+            "doctype": "Offer",
+            "user": user,
+            "amount": amount,
+            "ad": ad_name
+        })
+        
+        offer.insert(ignore_permissions=True)
+        frappe.db.commit()
+        
+        return {
+            "status": "success",
+            "offer_id": offer.name,
+            "message": f"Offer of PKR {amount:,.0f} has been submitted successfully",
+            "action": "created"
+        }
+
+
+@frappe.whitelist()
+def get_existing_offer():
+    """Get existing offer for current user and ad"""
+    resp = frappe._dict(json.loads(frappe.request.data))
+    
+    user = frappe.session.user
+    ad_name = resp.ad
+    
+    # Check if offer exists
+    existing_offer = frappe.db.exists("Offer", {"user": user, "ad": ad_name})
+    
+    if existing_offer:
+        offer = frappe.get_doc("Offer", existing_offer)
+        return {
+            "name": offer.name,
+            "amount": offer.amount,
+            "creation": offer.creation
+        }
+    
+    # Return empty dict instead of None for consistency
+    return {}
+
+
+@frappe.whitelist()
+def cancel_offer():
+    """Cancel an existing offer"""
+    resp = frappe._dict(json.loads(frappe.request.data))
+    frappe.log_error("Cancel Offer API", f"Received: {resp}")
+    
+    user = frappe.session.user
+    offer_id = resp.offer_id
+    
+    # Validate offer exists and belongs to user
+    offer = frappe.db.exists("Offer", {"name": offer_id, "user": user})
+    
+    if not offer:
+        frappe.throw("Offer not found or doesn't belong to you", frappe.PermissionError)
+    
+    # Delete offer
+    frappe.delete_doc("Offer", offer_id, ignore_permissions=True)
+    frappe.db.commit()
+    
+    return {
+        "status": "success",
+        "message": "Offer cancelled successfully"
+    }
+
+import frappe
+from frappe.client import get_value
+
+@frappe.whitelist()
+def get_user_offers():
+    """
+    Fetch all offers for the current user with related Ad details.
+    Returns combined data from Offer and Ad doctypes.
+    """
+    user = frappe.session.user
+    
+    try:
+        # Get all offers for current user
+        offers = frappe.get_list(
+            "Offer",
+            filters={"user": user},
+            fields=["name", "ad", "amount", "creation", "status"],
+            order_by="creation desc"
+        )
+        
+        if not offers:
+            return []
+        
+        # Enrich offers with Ad details
+        result = []
+        for offer in offers:
+            ad_doc = frappe.get_doc("Ad", offer["ad"])
+            
+            result.append({
+                "name": offer["name"],
+                "ad": offer["ad"],
+                "user": user,
+                "amount": offer["amount"],
+                "creation": offer["creation"],
+                "make": ad_doc.make,
+                "model": ad_doc.model,
+                "year": ad_doc.year,
+                "image": ad_doc.images[0]["image"] if ad_doc.images else None,
+                "chassisNo": ad_doc.vin or "N/A",
+                "importerName": ad_doc.user,  # Assuming user field contains importer name
+                "eta": ad_doc.eta or "N/A",
+                "dealStatus": offer.get("status", "active"),
+                "expiryDate": None,  # Will be calculated based on offer creation + days
+            })
+        
+        return result
+    
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "get_user_offers")
+        frappe.throw(f"Error fetching offers: {str(e)}")
+
+
+import frappe
+from frappe.client import get_value
+
+@frappe.whitelist()
+def get_user_offers():
+    """
+    Fetch all offers for the current user with related Ad details.
+    Returns combined data from Offer and Ad doctypes.
+    """
+    user = frappe.session.user
+    
+    try:
+        # Get all offers for current user
+        offers = frappe.get_list(
+            "Offer",
+            filters={"user": user},
+            fields=["name", "ad", "amount", "creation", "status"],
+            order_by="creation desc"
+        )
+        
+        if not offers:
+            return []
+        
+        # Enrich offers with Ad details
+        result = []
+        for offer in offers:
+            ad_doc = frappe.get_doc("Ad", offer["ad"])
+            
+            result.append({
+                "name": offer["name"],
+                "ad": offer["ad"],
+                "user": user,
+                "amount": offer["amount"],
+                "creation": offer["creation"],
+                "make": ad_doc.make,
+                "model": ad_doc.model,
+                "year": ad_doc.year,
+                "image": ad_doc.images[0]["image"] if ad_doc.images else None,
+                "chassisNo": ad_doc.vin or "N/A",
+                "importerName": ad_doc.user,  # Assuming user field contains importer name
+                "eta": ad_doc.eta or "N/A",
+                "dealStatus": offer.get("status", "active"),
+                "expiryDate": None,  # Will be calculated based on offer creation + days
+            })
+        
+        return result
+    
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "get_user_offers")
+        frappe.throw(f"Error fetching offers: {str(e)}")
+
+
+@frappe.whitelist()
+def get_user_offers_by_status(status=None):
+    import json
+
+    if not status:
+        request_data = json.loads(frappe.request.data)
+        status = request_data.get("status")
+        
+    """
+    Fetch offers for current user filtered by status (active, cancelled, expired).
+    """
+    user = frappe.session.user
+    
+    try:
+        # Map status to offer status field value
+        status_map = {
+            "active": "Active",
+            "cancelled": "Cancelled",
+            "expired": "Expired"
+        }
+        # user = '{user}' and 
+        
+        offer_status = status_map.get(status, "Active")
+        offers = frappe.db.sql(f"select name, ad, amount, creation, status from `tabOffer` where status='{offer_status}' ORDER BY creation desc",
+                               as_dict=True,
+                               debug=True
+        )
+        
+        if not offers:
+            return []
+        
+        # Enrich offers with Ad details
+        result = []
+        for offer in offers:
+            try:
+                ad_doc = frappe.get_doc("Ad", offer["ad"])
+                cover_image = None
+                for i in ad_doc.attachments:
+                    if i.image:
+                        cover_image = i.name
+                        break
+
+                result.append({
+                    "name": offer["name"],
+                    "ad": offer["ad"],
+                    "user": user,
+                    "amount": offer["amount"],
+                    "creation": offer["creation"],
+                    "make": ad_doc.make,
+                    "model": ad_doc.model,
+                    "year": ad_doc.year,
+                    "image": cover_image,
+                    "chassisNo": ad_doc.vin or "N/A",
+                    "importerName": ad_doc.user,
+                    "eta": ad_doc.eta or "N/A",
+                    "dealStatus": offer.get("status", "Active").lower(),
+                    "expiryDate": None,
+                })
+            except frappe.DoesNotExistError:
+                # Skip if Ad doesn't exist
+                continue
+        
+        return result
+    
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "get_user_offers_by_status")
+        frappe.throw(f"Error fetching offers by status: {str(e)}")

@@ -23,16 +23,21 @@ export interface AdDocument extends CreateAdPayload {
 
 // ─── Types for Ad Submission ──────────────────────────────────
 
+// Child table for Ad Detail (images)
 export interface AdDetailRow {
-  image: string; // File path or attachment name
-  description?: string;
+  image: string; // Attach field
+}
+
+// Child table for Ad Features
+export interface AdFeatureRow {
+  features: string; // Feature name
 }
 
 export interface CreateAdPayload {
   // Basic Information
   lot_number: string;
   vin: string;
-  auction_report?: string; // Attachment name
+  attachment?: string; // Attach field for Auction Report
   user?: string; // Current logged-in user
   
   // Car Information
@@ -44,7 +49,7 @@ export interface CreateAdPayload {
   // Pricing & Mileage
   mileage: number;
   price: number;
-  exterior_color: string;
+  colour: string;
   description: string;
   
   // Location
@@ -72,20 +77,17 @@ export interface CreateAdPayload {
   drive_type?: string;
   boot_space?: string;
   
-  // Features (comma-separated)
-  features?: string;
-  
   // Contact Information
-  contact_number: boolean;
-  system_chat: boolean;
-  whatsapp_contact: boolean;
-  other_information: boolean;
+  contact_number?: boolean;
+  system_chat?: boolean;
+  whatsapp_contact?: boolean;
+  other_information?: boolean;
   
   // Child Table: Ad Detail (images)
-  ad_details?: AdDetailRow[];
+  attachments?: AdDetailRow[];
   
-  // Attachments
-  attachments?: string[]; // File names/paths
+  // Child Table: Ad Features
+  ad_features?: AdFeatureRow[];
 }
 
 // ─── CSRF Token Helper ────────────────────────────────────────
@@ -276,43 +278,39 @@ export const submitAdWithFiles = async (formData: {
   };
 }): Promise<AdDocument> => {
   try {
-    // Step 1: Upload all files (images and documents)
+    // Step 1: Upload all image files
     const imageFiles = formData.mediaFiles
       .filter((m) => m.type === "image")
       .map((m) => m.file);
-    const documentFiles = formData.mediaFiles
-      .filter((m) => m.type === "document")
-      .map((m) => m.file);
 
     let uploadedImages: string[] = [];
-    let uploadedDocuments: string[] = [];
     let auctionReportPath: string | undefined;
 
     if (imageFiles.length > 0) {
       uploadedImages = await uploadMultipleFiles(imageFiles);
     }
 
-    if (documentFiles.length > 0) {
-      uploadedDocuments = await uploadMultipleFiles(documentFiles);
-    }
-
     if (formData.auctionReport) {
       auctionReportPath = await uploadFile(formData.auctionReport);
     }
 
-    // Step 2: Create Ad Detail rows (child table)
-    const adDetails: AdDetailRow[] = uploadedImages.map((imagePath) => ({
+    // Step 2: Create Ad Detail rows (child table) with images only
+    const adDetail: AdDetailRow[] = uploadedImages.map((imagePath) => ({
       image: imagePath,
-      description: formData.description,
     }));
 
-    // Step 3: Build payload for Ad creation
+    // Step 3: Create Ad Feature rows (child table) with selected features
+    const adFeatures: AdFeatureRow[] = formData.features.map((features) => ({
+      features,
+    }));
+
+    // Step 4: Build payload for Ad creation
     const payload: CreateAdPayload = {
       // Basic Information
       lot_number: formData.lotNumber,
       vin: formData.vin,
-      auction_report: auctionReportPath,
-      user: getStoredUser() || undefined, // Add current user
+      attachment: auctionReportPath,
+      user: getStoredUser() || undefined,
 
       // Car Information
       year: formData.carInfo.year,
@@ -323,7 +321,7 @@ export const submitAdWithFiles = async (formData: {
       // Pricing & Mileage
       mileage: parseInt(formData.mileage) || 0,
       price: parseInt(formData.price) || 0,
-      exterior_color: formData.exteriorColor,
+      colour: formData.exteriorColor,
       description: formData.description,
 
       // Location
@@ -337,7 +335,7 @@ export const submitAdWithFiles = async (formData: {
 
       // Additional Information
       gearbox: formData.additionalInfo.gearbox || undefined,
-      engine_size: formData.additionalInfo.engineSize || undefined,
+      // engine_size: formData.additionalInfo.engineSize || undefined,
       doors: formData.additionalInfo.doors || undefined,
       seats: formData.additionalInfo.seats || undefined,
       fuel_type: formData.additionalInfo.fuelType || undefined,
@@ -351,26 +349,23 @@ export const submitAdWithFiles = async (formData: {
       drive_type: formData.additionalInfo.driveType || undefined,
       boot_space: formData.additionalInfo.bootSpace || undefined,
 
-      // Features (comma-separated string)
-      features: formData.features.join(","),
-
       // Contact Information
       contact_number: formData.contactInfo.contactNumber,
       system_chat: formData.contactInfo.systemChat,
       whatsapp_contact: formData.contactInfo.whatsappContact,
       other_information: formData.contactInfo.otherInformation,
 
-      // Child Table: Ad Details with images
-      ad_details: adDetails,
+      // Child Table: Ad Detail with images
+      attachments: adDetail,
 
-      // Attachments (additional documents)
-      attachments: uploadedDocuments,
+      // Child Table: Ad Features
+      ad_features: adFeatures,
     };
 
-    // Step 3: Create Ad record
+    // Step 5: Create Ad record
     const createdAd = await createAd(payload);
 
-    // Step 4: Submit Ad record (optional - only if required by business logic)
+    // Step 6: Submit Ad record (optional - only if required by business logic)
     // Uncomment the line below if you want to auto-submit on creation
     // const submittedAd = await submitAd(createdAd.name);
 
@@ -379,4 +374,4 @@ export const submitAdWithFiles = async (formData: {
     console.error("Error submitting Ad:", error);
     throw error;
   }
-}
+};

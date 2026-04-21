@@ -1,0 +1,129 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-04-10 16:56:15.877346",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "user",
+  "profile_image",
+  "full_name",
+  "email",
+  "phone",
+  "date_of_birth",
+  "nationality",
+  "default_port",
+  "shipping_address",
+  "billing_address",
+  "preffered_shipping_route",
+  "two_factor_authentication",
+  "verification",
+  "naming_series"
+ ],
+ "fields": [
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "User",
+   "options": "User"
+  },
+  {
+   "default": "SP-",
+   "fieldname": "naming_series",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "naming series"
+  },
+  {
+   "fieldname": "full_name",
+   "fieldtype": "Data",
+   "label": "Full Name"
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email"
+  },
+  {
+   "fieldname": "phone",
+   "fieldtype": "Phone",
+   "label": "Phone"
+  },
+  {
+   "fieldname": "date_of_birth",
+   "fieldtype": "Date",
+   "label": "Date Of Birth"
+  },
+  {
+   "fieldname": "nationality",
+   "fieldtype": "Data",
+   "label": "Nationality"
+  },
+  {
+   "fieldname": "default_port",
+   "fieldtype": "Link",
+   "label": "Default Port",
+   "options": "Port"
+  },
+  {
+   "fieldname": "shipping_address",
+   "fieldtype": "Data",
+   "label": "Shipping Address"
+  },
+  {
+   "fieldname": "billing_address",
+   "fieldtype": "Data",
+   "label": "Billing Address"
+  },
+  {
+   "fieldname": "preffered_shipping_route",
+   "fieldtype": "Data",
+   "label": "Preffered Shipping Route"
+  },
+  {
+   "default": "0",
+   "fieldname": "two_factor_authentication",
+   "fieldtype": "Check",
+   "label": "Two Factor Authentication"
+  },
+  {
+   "default": "0",
+   "fieldname": "verification",
+   "fieldtype": "Check",
+   "label": "Verification"
+  },
+  {
+   "fieldname": "profile_image",
+   "fieldtype": "Image",
+   "label": "Profile Image"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-04-10 17:13:40.192958",
+ "modified_by": "Administrator",
+ "module": "Cars on Ship",
+ "name": "Saler Profile",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "naming_series:",
  "creation": "2026-03-17 11:59:12.447559",
  "default_view": "List",
  "doctype": "DocType",
@@ -27,45 +28,15 @@
   "body_type",
   "attachment",
   "column_break_7zdnc",
+  "chassis_number",
   "gearbox",
   "year",
   "price",
   "mileage",
-  "section_break_g1piv",
-  "abs",
-  "air_bags",
-  "air_conditioning",
-  "alloy_rims",
-  "apple_carplay",
-  "360_camera",
-  "climate_control",
-  "cruise_control",
-  "drls",
-  "fog_lights",
-  "column_break_wuzdj",
-  "front_camera",
-  "front_speakers",
-  "hud",
-  "heated_seats",
-  "immobilizer_key",
-  "infotainment_system",
-  "keyless_entry",
-  "led_headlights",
-  "paddle_shifters",
-  "panoramic_sunroof",
-  "parking_sensors",
-  "column_break_h7swi",
-  "power_locks",
-  "power_mirrors",
-  "tpms",
-  "sun_roof",
-  "steering_switches",
-  "rear_speakers",
-  "rear_camera",
-  "rear_ac_vents",
-  "push_start",
-  "power_steering",
-  "power_seats",
+  "engine_power",
+  "fuel_consumption",
+  "co2_emissions",
+  "tax_per_year",
   "eta_section",
   "vehicle_status",
   "column_break_ynbfw",
@@ -77,7 +48,9 @@
   "section_break_xhaif",
   "attachments",
   "section_break_qxbq4",
-  "description"
+  "description",
+  "ad_features",
+  "naming_series"
  ],
  "fields": [
   {
@@ -254,211 +227,6 @@
    "label": "Attachment"
   },
   {
-   "fieldname": "section_break_g1piv",
-   "fieldtype": "Section Break",
-   "label": "Features"
-  },
-  {
-   "default": "0",
-   "fieldname": "abs",
-   "fieldtype": "Check",
-   "label": "ABS"
-  },
-  {
-   "default": "0",
-   "fieldname": "air_bags",
-   "fieldtype": "Check",
-   "label": "Air Bags"
-  },
-  {
-   "default": "0",
-   "fieldname": "air_conditioning",
-   "fieldtype": "Check",
-   "label": "Air Conditioning"
-  },
-  {
-   "default": "0",
-   "fieldname": "alloy_rims",
-   "fieldtype": "Check",
-   "label": "Alloy Rims"
-  },
-  {
-   "default": "0",
-   "fieldname": "apple_carplay",
-   "fieldtype": "Check",
-   "label": "Apple CarPlay"
-  },
-  {
-   "default": "0",
-   "fieldname": "360_camera",
-   "fieldtype": "Check",
-   "label": "360 Camera"
-  },
-  {
-   "default": "0",
-   "fieldname": "climate_control",
-   "fieldtype": "Check",
-   "label": "Climate Control"
-  },
-  {
-   "default": "0",
-   "fieldname": "cruise_control",
-   "fieldtype": "Check",
-   "label": "Cruise Control"
-  },
-  {
-   "default": "0",
-   "fieldname": "drls",
-   "fieldtype": "Check",
-   "label": "DRLs"
-  },
-  {
-   "default": "0",
-   "fieldname": "fog_lights",
-   "fieldtype": "Check",
-   "label": "Fog Lights"
-  },
-  {
-   "fieldname": "column_break_wuzdj",
-   "fieldtype": "Column Break"
-  },
-  {
-   "default": "0",
-   "fieldname": "front_camera",
-   "fieldtype": "Check",
-   "label": "Front Camera"
-  },
-  {
-   "default": "0",
-   "fieldname": "front_speakers",
-   "fieldtype": "Check",
-   "label": "Front Speakers"
-  },
-  {
-   "default": "0",
-   "fieldname": "hud",
-   "fieldtype": "Check",
-   "label": "HUD"
-  },
-  {
-   "default": "0",
-   "fieldname": "heated_seats",
-   "fieldtype": "Check",
-   "label": "Heated Seats"
-  },
-  {
-   "default": "0",
-   "fieldname": "immobilizer_key",
-   "fieldtype": "Check",
-   "label": "Immobilizer Key"
-  },
-  {
-   "default": "0",
-   "fieldname": "infotainment_system",
-   "fieldtype": "Check",
-   "label": "Infotainment System"
-  },
-  {
-   "default": "0",
-   "fieldname": "keyless_entry",
-   "fieldtype": "Check",
-   "label": "Keyless Entry"
-  },
-  {
-   "default": "0",
-   "fieldname": "led_headlights",
-   "fieldtype": "Check",
-   "label": "LED Headlights"
-  },
-  {
-   "default": "0",
-   "fieldname": "paddle_shifters",
-   "fieldtype": "Check",
-   "label": "Paddle Shifters"
-  },
-  {
-   "default": "0",
-   "fieldname": "panoramic_sunroof",
-   "fieldtype": "Check",
-   "label": "Panoramic Sunroof"
-  },
-  {
-   "default": "0",
-   "fieldname": "parking_sensors",
-   "fieldtype": "Check",
-   "label": "Parking Sensors"
-  },
-  {
-   "fieldname": "column_break_h7swi",
-   "fieldtype": "Column Break"
-  },
-  {
-   "default": "0",
-   "fieldname": "power_locks",
-   "fieldtype": "Check",
-   "label": "Power Locks"
-  },
-  {
-   "default": "0",
-   "fieldname": "power_mirrors",
-   "fieldtype": "Check",
-   "label": "Power Mirrors"
-  },
-  {
-   "default": "0",
-   "fieldname": "tpms",
-   "fieldtype": "Check",
-   "label": "TPMS"
-  },
-  {
-   "default": "0",
-   "fieldname": "sun_roof",
-   "fieldtype": "Check",
-   "label": "Sun Roof"
-  },
-  {
-   "default": "0",
-   "fieldname": "steering_switches",
-   "fieldtype": "Check",
-   "label": "Steering Switches"
-  },
-  {
-   "default": "0",
-   "fieldname": "rear_speakers",
-   "fieldtype": "Check",
-   "label": "Rear Speakers"
-  },
-  {
-   "default": "0",
-   "fieldname": "rear_camera",
-   "fieldtype": "Check",
-   "label": "Rear Camera"
-  },
-  {
-   "default": "0",
-   "fieldname": "rear_ac_vents",
-   "fieldtype": "Check",
-   "label": "Rear AC Vents"
-  },
-  {
-   "default": "0",
-   "fieldname": "push_start",
-   "fieldtype": "Check",
-   "label": "Push Start"
-  },
-  {
-   "default": "0",
-   "fieldname": "power_steering",
-   "fieldtype": "Check",
-   "label": "Power Steering"
-  },
-  {
-   "default": "0",
-   "fieldname": "power_seats",
-   "fieldtype": "Check",
-   "label": "Power Seats"
-  },
-  {
    "fieldname": "eta_section",
    "fieldtype": "Section Break",
    "label": "ETA"
@@ -482,14 +250,54 @@
    "fieldname": "vin",
    "fieldtype": "Data",
    "label": "VIN"
+  },
+  {
+   "fieldname": "ad_features",
+   "fieldtype": "Table",
+   "label": "Ad Features",
+   "options": "Ad Features"
+  },
+  {
+   "fieldname": "engine_power",
+   "fieldtype": "Link",
+   "label": "Engine Power",
+   "options": "Engine Power"
+  },
+  {
+   "fieldname": "fuel_consumption",
+   "fieldtype": "Data",
+   "label": "Fuel Consumption"
+  },
+  {
+   "fieldname": "co2_emissions",
+   "fieldtype": "Data",
+   "label": "CO2 Emissions"
+  },
+  {
+   "fieldname": "tax_per_year",
+   "fieldtype": "Data",
+   "label": "Tax Per Year"
+  },
+  {
+   "default": "Ad-",
+   "fieldname": "naming_series",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "naming series"
+  },
+  {
+   "fieldname": "chassis_number",
+   "fieldtype": "Data",
+   "label": "chassis number"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-04 20:44:53.585647",
+ "modified": "2026-04-17 21:17:28.549362",
  "modified_by": "Administrator",
  "module": "Cars on Ship",
  "name": "Ad",
+ "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
   {

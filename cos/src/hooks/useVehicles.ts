@@ -1,10 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import type { UseQueryResult } from "@tanstack/react-query";
+import {fetchAPIAuthPost} from "../api/vehicles"
+
+// ─── External API Imports ──────────────────────────────────────
 import {
-  getAds,
-  getMakes,
-  getModels,
-  getVariants,
   getYears,
   getVehicleStatuses,
   getGearboxes,
@@ -17,13 +16,22 @@ import {
   getDriveTypes,
   getBootSpaces,
   getSellerTypes,
-  getAdDetail,
   getPorts,
+  getFeatures,
+  getEnginePower,
+  getMakes,
+  getModels,
+  getVariants,
   // Types
-  type Ad,
-  type AdDetail,
-  type Make,
-  type Model,
+} from "../api/frappe-rest-api";
+
+// ─── Local Vehicle API Imports ────────────────────────────────
+import {
+  getAds,
+
+  getAdDetail,
+  getUserwiseAd,
+  // Types
   type Year,
   type VehicleStatus,
   type Gearbox,
@@ -36,11 +44,17 @@ import {
   type DriveType,
   type BootSpace,
   type SellerType,
-  type Variant,
   type Port,
+  type Feature,
+  type EnginePower,
+  type Ad,
+  type AdDetail,
+  type Make,
+  type Model,
+  type Variant,
 } from "@/api/vehicles";
+
 import type { AdvancedFilters } from "@/components/AdvancedSearchPanel";
-import { getUserwiseAd } from "@/api/vehicles";
 
 // ─── Core Hooks ───────────────────────────────────────────────
 
@@ -94,6 +108,14 @@ export const usePorts = (): UseQueryResult<Port[], Error> =>
     staleTime: 1000 * 60 * 60,
   });
 
+
+export const useFeatures = (): UseQueryResult<Feature[], Error> =>
+  useQuery({
+    queryKey: ["features"],
+    queryFn: getFeatures,
+    staleTime: 1000 * 60 * 60,
+  });
+
 // ─── Ads ──────────────────────────────────────────────────────
 
 /**
@@ -136,6 +158,15 @@ export const useVehicleStatuses = (): UseQueryResult<
   useQuery({
     queryKey: ["vehicle-statuses"],
     queryFn: getVehicleStatuses,
+    staleTime: 1000 * 60 * 60,
+  });
+export const useEnginePower = (): UseQueryResult<
+  EnginePower[],
+  Error
+> =>
+  useQuery({
+    queryKey: ["engine-power"],
+    queryFn: getEnginePower,
     staleTime: 1000 * 60 * 60,
   });
 
@@ -295,3 +326,44 @@ export const useVehicleFilters = (make?: string, model?: string): UseVehicleFilt
     sellerTypes: useSellerTypes(),
   };
 };
+
+export interface CreateOfferResponse {
+  status: string
+  offer_id: string
+  message: string
+  action: 'created' | 'updated'
+}
+
+export interface ExistingOfferResponse {
+  name: string
+  amount: number
+  creation: string
+}
+
+export interface CancelOfferResponse {
+  status: string
+  message: string
+}
+
+export const createOffer = (
+  amount: number,
+  adName: string
+): Promise<CreateOfferResponse> =>
+  fetchAPIAuthPost('cars_on_ship.api.create_offer', {
+    amount: amount.toString(),
+    ad: adName,
+  })
+
+export const getExistingOffer = (
+  adName: string
+): Promise<ExistingOfferResponse | null> =>
+  fetchAPIAuthPost('cars_on_ship.api.get_existing_offer', {
+    ad: adName,
+  })
+
+export const cancelOffer = (
+  offerId: string
+): Promise<CancelOfferResponse> =>
+  fetchAPIAuthPost('cars_on_ship.api.cancel_offer', {
+    offer_id: offerId,
+  })

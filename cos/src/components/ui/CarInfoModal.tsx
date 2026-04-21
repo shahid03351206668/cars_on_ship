@@ -47,6 +47,7 @@ interface ColumnListProps<T extends { name: string }> {
 
 const ColumnList = <T extends { name: string }>({ 
   items, 
+  selected,
   onSelect, 
   placeholder, 
   loading 
@@ -59,7 +60,11 @@ const ColumnList = <T extends { name: string }>({
             key={item.name} 
             type="button" 
             onClick={() => onSelect(item.name)}
-            className={`w-full text-left px-4 py-2.5 ...`}
+            className={`w-full text-left px-4 py-2.5 border-b border-gray-100 transition-colors ${
+              selected === item.name
+                ? 'bg-[#FC7844] text-white font-medium'
+                : 'text-gray-700 hover:bg-gray-50'
+            }`}
           >
             {item.name}
           </button>
@@ -73,7 +78,7 @@ const ColumnList = <T extends { name: string }>({
   </div>
 );
 
-export default function CarInfoModal({ isOpen, onClose, onSelect, years, makes, models, variants, selectedYear, selectedMake, selectedModel, onYearChange, onMakeChange, onModelChange }: CarInfoModalProps) {
+export default function CarInfoModal({ isOpen, onClose, onSelect, years, makes, models, variants, selectedYear, selectedMake, selectedModel, onYearChange, onMakeChange, onModelChange, onVariantChange }: CarInfoModalProps) {
   const [selectedVariant, setSelectedVariant] = useState('');
 
   if (!isOpen) return null;
@@ -115,10 +120,36 @@ export default function CarInfoModal({ isOpen, onClose, onSelect, years, makes, 
             </div>
 
             <div className="grid grid-cols-4 gap-4">
-              <ColumnList items={years} selected={selectedYear} onSelect={onYearChange} placeholder="Select Year" />
-              <ColumnList items={selectedYear ? makes : []} selected={selectedMake} onSelect={onMakeChange} placeholder="Select Make" loading={!selectedYear} />
-              <ColumnList items={selectedMake ? models : []} selected={selectedModel} onSelect={onModelChange} placeholder="Select Model" loading={!selectedMake} />
-              <ColumnList items={selectedModel ? variants : []} selected={selectedVariant} onSelect={setSelectedVariant} placeholder="Select Version" loading={!selectedModel} />
+              <ColumnList 
+                items={years} 
+                selected={selectedYear} 
+                onSelect={onYearChange} 
+                placeholder="Select Year" 
+              />
+              <ColumnList 
+                items={selectedYear ? makes : []} 
+                selected={selectedMake} 
+                onSelect={onMakeChange} 
+                placeholder="Select Make" 
+                loading={!selectedYear} 
+              />
+              <ColumnList 
+                items={selectedMake ? models : []} 
+                selected={selectedModel} 
+                onSelect={onModelChange} 
+                placeholder="Select Model" 
+                loading={!selectedMake} 
+              />
+              <ColumnList 
+                items={selectedModel ? variants : []} 
+                selected={selectedVariant} 
+                onSelect={(variant) => {
+                  setSelectedVariant(variant);
+                  onVariantChange(variant);
+                }} 
+                placeholder="Select Version" 
+                loading={!selectedModel} 
+              />
             </div>
           </div>
 

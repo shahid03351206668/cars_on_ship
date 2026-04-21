@@ -36,7 +36,7 @@ export const getStoredSid = (): string | null => {
 };
 
 // ─── CSRF Token ───────────────────────────────────────────────
-const getCsrfToken = (): string => {
+export const getCsrfToken = (): string => {
   const match = document.cookie.match(/csrftoken=([^;]+)/);
   return match ? match[1] : "fetch";
 };

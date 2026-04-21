@@ -1,11 +1,19 @@
 // ─── Base fetcher ─────────────────────────────────────────────
 import type { AdvancedFilters } from "@/components/AdvancedSearchPanel";
 import { getStoredSid } from "./auth";
-
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 // ─── Base URL ─────────────────────────────────────────────────
-const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
+export const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
 
 // ─── Ad Types ─────────────────────────────────────────────────
+export interface FavoriteAdResponse {
+  name: string;
+  ad: string;
+  user: string;
+  enable: boolean;
+}
+
+
 export interface Ad {
   name: string;
   user: string;
@@ -13,27 +21,47 @@ export interface Ad {
   boot_space: string;
   make: string;
   model: string;
+  variant?: string;
   colour: string;
-  colour_code?: string;
+  colour_code?: string
   body_type: string;
   vehicle_status: string;
-  year: number;
-  acceleration?: string;
+  year: string;
   fuel_type: string;
   seats: string;
   doors: string;
   gearbox: string;
   description?: string;
-  images: string[];
   from_port?: string;
   to_port?: string;
+  sold?: number;
+  images?: string[] 
+  acceleration?: string 
+  price?: number
+  mileage?: number
+  drive_type: string;
+  engine_power?: string;
+  fuel_consumption?: string;
+  co2_emissions?: string;
+  tax_per_year?: string;
+  eta?: string;
+  lot_number?: string;
+  vin?: string;
+}
+ 
+export interface AdDetail extends Ad {
+  
+  features: string[];
+  attachments?: Array<{ image: string }>;
 }
 
-export interface AdDetail extends Ad {
-  price: number;
-  mileage: number;
-  drive_type: string;
+export interface Feature {
+  name: string;
 }
+export interface EnginePower {
+  name: string;
+}
+
 
 // ─── Generic Option Type ──────────────────────────────────────
 export interface Option {
@@ -81,7 +109,7 @@ interface ApiResponse<T> {
 }
 
 // ─── CSRF Token ───────────────────────────────────────────────
-const getCsrfToken = (): string => {
+export const getCsrfToken = (): string => {
   const match = document.cookie.match(/csrftoken=([^;]+)/);
   return match ? match[1] : "fetch";
 };
@@ -114,7 +142,7 @@ const fetchAPI = async <T extends object>(
 };
 
 // ─── Authenticated Fetcher (includes sid header) ───────────────
-const fetchAPIAuth = async <T extends object>(
+export const fetchAPIAuth = async <T extends object>(
   method: string,
   params?: Record<string, string>
 ): Promise<T> => {
@@ -142,25 +170,30 @@ const fetchAPIAuth = async <T extends object>(
   return data.message;
 };
 
-// ─── Core APIs ────────────────────────────────────────────────
 
-export const getMakes = (): Promise<Make[]> =>
-  fetchAPI<Make[]>("cars_on_ship.api.get_makes");
+export const fetchAPIAuthPost = async <T extends object>(
+  method: string,
+  params?: Record<string, string>
+): Promise<T> => {
+  const sid = getStoredSid();
+  const url = new URL(`/api/method/${method}`, BASE_URL);
 
-export const getModels = (make?: string): Promise<Model[]> =>
-  fetchAPI<Model[]>("cars_on_ship.api.get_models", make ? { make } : undefined);
+  const res = await fetch(url.toString(), {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "X-Frappe-CSRF-Token": getCsrfToken(),
+      "Content-Type": "application/json",
+      ...(sid ? { "X-Frappe-Session-Id": sid } : {}),
+    },
+    body: JSON.stringify(params),
+  });
 
-export const getVariants = (model?: string): Promise<Variant[]> =>
-  fetchAPI<Variant[]>("cars_on_ship.api.get_variants", model ? { model } : undefined);
+  if (!res.ok) throw new Error("API Error");
 
-export const getYears = (): Promise<Year[]> =>
-  fetchAPI<Year[]>("cars_on_ship.api.get_years");
-
-/**
- * Fetch all available ports
- */
-export const getPorts = (): Promise<Port[]> =>
-  fetchAPI<Port[]>("cars_on_ship.api.get_ports");
+  const data: ApiResponse<T> = await res.json();
+  return data.message;
+};
 
 export const getAds = async (
   filters?: Partial<AdvancedFilters>
@@ -221,76 +254,53 @@ export const getAds = async (
 export const getAdDetail = (name: string): Promise<AdDetail> =>
   fetchAPI<AdDetail>("cars_on_ship.api.get_ad_detail", { name });
 
-// ─── Advanced Filter APIs ─────────────────────────────────────
 
-/**
- * Fetch all vehicle statuses (e.g., 'At Sea', 'Landed')
- */
-export const getVehicleStatuses = (): Promise<VehicleStatus[]> =>
-  fetchAPI<VehicleStatus[]>("cars_on_ship.api.get_vehicle_statuses");
+// Fetch user-specific ads (requires authentication)
 
-/**
- * Fetch all transmission types
- */
-export const getGearboxes = (): Promise<Gearbox[]> =>
-  fetchAPI<Gearbox[]>("cars_on_ship.api.get_gearboxes");
-
-/**
- * Fetch all body types (SUV, Sedan, Hatchback, etc.)
- */
-export const getBodyTypes = (): Promise<BodyType[]> =>
-  fetchAPI<BodyType[]>("cars_on_ship.api.get_body_types");
-
-/**
- * Fetch all available car colors
- */
-export const getColours = (): Promise<Colour[]> =>
-  fetchAPI<Colour[]>("cars_on_ship.api.get_colours");
-
-/**
- * Fetch door count options
- */
-export const getDoorOptions = (): Promise<DoorOption[]> =>
-  fetchAPI<DoorOption[]>("cars_on_ship.api.get_door_options");
-
-/**
- * Fetch seating capacity options
- */
-export const getSeatOptions = (): Promise<SeatOption[]> =>
-  fetchAPI<SeatOption[]>("cars_on_ship.api.get_seat_options");
-
-/**
- * Fetch fuel type categories (Petrol, Diesel, Hybrid, Electric)
- */
-export const getFuelTypes = (): Promise<FuelType[]> =>
-  fetchAPI<FuelType[]>("cars_on_ship.api.get_fuel_types");
-
-/**
- * Fetch acceleration brackets (e.g., 0-62mph times)
- */
-export const getAccelerationRanges = (): Promise<AccelerationRange[]> =>
-  fetchAPI<AccelerationRange[]>("cars_on_ship.api.get_acceleration_ranges");
-
-/**
- * Fetch drivetrain options (AWD, FWD, RWD)
- */
-export const getDriveTypes = (): Promise<DriveType[]> =>
-  fetchAPI<DriveType[]>("cars_on_ship.api.get_drive_types");
-
-/**
- * Fetch trunk/boot capacity categories
- */
-export const getBootSpaces = (): Promise<BootSpace[]> =>
-  fetchAPI<BootSpace[]>("cars_on_ship.api.get_boot_spaces");
-
-/**
- * Fetch seller categories (Private, Dealer, etc.)
- */
-export const getSellerTypes = (): Promise<SellerType[]> =>
-  fetchAPI<SellerType[]>("cars_on_ship.api.get_seller_types");
-
-/**
- * Fetch user-specific ads (requires authentication)
- */
 export const getUserwiseAd = (): Promise<AdDetail[]> =>
   fetchAPIAuth<AdDetail[]>("cars_on_ship.api.get_userwise_ad");
+
+
+
+export const useToggleFavorite = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ adName, currentState }: { adName: string; currentState: boolean }) => {
+      // We pass the ad name and the NEW state (toggle the current one)
+      return await fetchAPIAuth("your_app.api.toggle_favorite", {
+        ad: adName,
+        enable: (!currentState).toString(), // Frappe expects strings usually
+      });
+    },
+    onSuccess: () => {
+      // Refetch any "favorites" list you might have in the UI
+      queryClient.invalidateQueries({ queryKey: ["favorites"] });
+    },
+    onError: (error) => {
+      console.error("Failed to update favorite:", error);
+    }
+  });
+};
+
+
+export const fetchFavoriteAds = async (): Promise<FavoriteAdResponse[]> => {
+  const sid = getStoredSid();
+  const url = new URL("/api/method/cars_on_ship.api.get_favorite_ads", BASE_URL);
+ 
+  const res = await fetch(url.toString(), {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "X-Frappe-CSRF-Token": getCsrfToken(),
+      ...(sid ? { "X-Frappe-Session-Id": sid } : {}),
+    },
+  });
+ 
+  if (!res.ok) throw new Error("Failed to fetch favorites");
+ 
+  const data: ApiResponse<FavoriteAdResponse[]> = await res.json();
+  return data.message || [];
+};
+ 
+

@@ -12,6 +12,9 @@ import {
   useDriveTypes,
   useBootSpaces,
   useColours,
+  useFeatures,
+  useVehicleStatuses,
+  useEnginePower
 } from '@/hooks/useVehicles';
 import { submitAdWithFiles } from '@/api/ad';
 import CarInfoModal from '@/components/ui/CarInfoModal';
@@ -23,7 +26,9 @@ import type {
   AccelerationRange, 
   DriveType, 
   BootSpace,
-  Colour
+  Colour,
+  VehicleStatus,
+  EnginePower
 } from '@/api/vehicles';
 
 interface CarInfo {
@@ -108,15 +113,7 @@ const INITIAL_CONTACT_INFO: ContactInfo = {
   agreedToTerms: false,
 };
 
-const FEATURES_LIST = [
-  'ABS', 'Air Bags', 'Air Conditioning', 'Alloy Rims', 'Android Auto', 'Apple CarPlay',
-  '360 Camera', 'Climate Control', 'Cruise Control', 'DRLs', 'Fog Lights', 'Front Camera',
-  'Front Speakers', 'Head Up Display (HUD)', 'Heated Seats', 'Immobilizer Key',
-  'Infotainment System', 'Keyless Entry', 'LED Headlights', 'Paddle Shifters',
-  'Panoramic Sunroof', 'Parking Sensors', 'Power Locks', 'Power Mirrors', 'Power Seats',
-  'Power Steering', 'Push Start', 'Rear AC Vents', 'Rear Camera', 'Rear Speakers',
-  'Steering Switches', 'Sun Roof', 'Tyre Pressure Monitoring System (TPMS)',
-];
+
 
 export default function Addcar() {
   const [formData, setFormData] = useState<FormData>({
@@ -137,8 +134,8 @@ export default function Addcar() {
     city: '',
     area: '',
     mediaFiles: [],
-    vehicleStatus: 'In Use',
-    eta: 'Coming in 7 days',
+    vehicleStatus: '',
+    eta: '',
     additionalInfo: INITIAL_ADDITIONAL_INFO,
     features: [],
     contactInfo: INITIAL_CONTACT_INFO,
@@ -155,12 +152,13 @@ export default function Addcar() {
   } | null>(null);
 
   // ====== API HOOKS - React Query ======
-  // Note: These hooks return UseQueryResult objects with { data, isLoading, error, etc. }
   const yearsQuery = useYears();
   const makesQuery = useMakes();
   const modelsQuery = useModels(formData.carInfo.year ? formData.carInfo.make : undefined);
   const variantsQuery = useVariants(formData.carInfo.model);
   const coloursQuery = useColours();
+  const vehicleStatusesQuery = useVehicleStatuses();
+  const enginePowerQuery = useEnginePower();
 
   const gearboxesQuery = useGearboxes();
   const doorsQuery = useDoorOptions();
@@ -169,6 +167,7 @@ export default function Addcar() {
   const accelerationRangesQuery = useAccelerationRanges();
   const driveTypesQuery = useDriveTypes();
   const bootSpacesQuery = useBootSpaces();
+  const featuresQuery = useFeatures();
 
   // Extract data with fallbacks for loading/error states
   const years = yearsQuery.data?.map(y => ({
@@ -180,6 +179,8 @@ export default function Addcar() {
   const models = modelsQuery.data ?? [];
   const variants = variantsQuery.data ?? [];
   const colours = coloursQuery.data ?? [];
+  const vehicleStatuses = vehicleStatusesQuery.data ?? [];
+  const enginePowers = enginePowerQuery.data ?? [];
   const gearboxes = gearboxesQuery.data ?? [];
   const doors = doorsQuery.data ?? [];
   const seats = seatsQuery.data ?? [];
@@ -187,6 +188,7 @@ export default function Addcar() {
   const accelerationRanges = accelerationRangesQuery.data ?? [];
   const driveTypes = driveTypesQuery.data ?? [];
   const bootSpaces = bootSpacesQuery.data ?? [];
+  const features = featuresQuery.data?.map(f => f.name) ?? [];
 
   // ====== CAR INFORMATION HANDLERS ======
   const handleInputChange = (
@@ -294,12 +296,7 @@ export default function Addcar() {
   };
 
   // ====== ETA HANDLERS ======
-  const handleVehicleStatusChange = (status: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      vehicleStatus: status,
-    }));
-  };
+
 
   const handleETAChange = (eta: string) => {
     setFormData((prev) => ({
@@ -329,9 +326,9 @@ export default function Addcar() {
     }));
   };
 
-  const filteredFeatures = FEATURES_LIST.filter((feature) =>
-    feature.toLowerCase().includes(searchFeatures.toLowerCase())
-  );
+  const filteredFeatures = features.filter((feature) =>
+  feature.toLowerCase().includes(searchFeatures.toLowerCase())
+);
 
   // ====== CONTACT INFO HANDLERS ======
   const handleContactInfoChange = (field: keyof ContactInfo, value: boolean) => {
@@ -348,8 +345,19 @@ export default function Addcar() {
   const validateForm = (): boolean => {
     const errors: string[] = [];
 
-    // Uncomment validation as needed
     // if (!formData.lotNumber) errors.push('Lot Number is required');
+    // if (!formData.vin) errors.push('VIN is required');
+    // if (!formData.carInfo.year) errors.push('Car Year is required');
+    // if (!formData.carInfo.make) errors.push('Car Make is required');
+    // if (!formData.carInfo.model) errors.push('Car Model is required');
+    // if (!formData.mileage) errors.push('Mileage is required');
+    // if (!formData.price) errors.push('Price is required');
+    // if (!formData.exteriorColor) errors.push('Exterior Color is required');
+    // if (!formData.description) errors.push('Car Description is required');
+    // if (!formData.country) errors.push('Country is required');
+    // if (!formData.city) errors.push('City is required');
+    // if (!formData.area) errors.push('Area is required');
+    // if (!formData.contactInfo.agreedToTerms) errors.push('You must agree to have legal rights to upload');
 
     if (errors.length > 0) {
       setSubmitMessage({
@@ -400,8 +408,8 @@ export default function Addcar() {
         city: '',
         area: '',
         mediaFiles: [],
-        vehicleStatus: 'In Use',
-        eta: 'Coming in 7 days',
+        vehicleStatus: '',
+        eta: '',
         additionalInfo: INITIAL_ADDITIONAL_INFO,
         features: [],
         contactInfo: INITIAL_CONTACT_INFO,
@@ -545,7 +553,7 @@ export default function Addcar() {
               </div>
 
               {/* Location Fields */}
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              {/* <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-700">
                     Country <span className="text-red-500">*</span>
@@ -585,7 +593,7 @@ export default function Addcar() {
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                   />
                 </div>
-              </div>
+              </div> */}
 
               <hr className="my-6" />
 
@@ -786,20 +794,24 @@ export default function Addcar() {
 
             <div className="px-6 py-8 space-y-6 sm:px-8">
               <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
-                  Vehicle Status <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={formData.vehicleStatus}
-                  onChange={(e) => handleVehicleStatusChange(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none bg-white cursor-pointer"
-                >
-                  <option value="">Select status</option>
-                  <option value="In Use">In Use</option>
-                  <option value="Imported">Imported</option>
-                  <option value="New">New</option>
-                </select>
-              </div>
+  <label className="block mb-2 text-sm font-medium text-gray-700">
+    Vehicle Status <span className="text-red-500">*</span>
+  </label>
+
+<select
+  name="vehicleStatus"
+  value={formData.vehicleStatus}
+  onChange={handleInputChange}
+  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none bg-white cursor-pointer"
+>
+  <option value="">Select status</option>
+  {vehicleStatuses.map((status: VehicleStatus) => (
+    <option key={status.name} value={status.name}>
+      {status.name}
+    </option>
+  ))}
+</select>
+</div>
 
               <div>
                 <label className="block mb-2 text-sm font-medium text-gray-700">
@@ -827,7 +839,7 @@ export default function Addcar() {
             </div>
 
             <div className="px-6 py-8 space-y-6 sm:px-8">
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-1 lg:grid-cols-1 px-[150px]">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-1 lg:grid-cols-1">
                 {/* Gearbox */}
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-700">Gearbox</label>
@@ -846,7 +858,7 @@ export default function Addcar() {
                 </div>
 
                 {/* Engine Size */}
-                <div>
+                {/* <div>
                   <label className="block mb-2 text-sm font-medium text-gray-700">Engine Size</label>
                   <input
                     type="text"
@@ -855,7 +867,7 @@ export default function Addcar() {
                     placeholder="Enter engine size (e.g., 1500cc)"
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                   />
-                </div>
+                </div> */}
 
                 {/* Doors */}
                 <div>
@@ -909,7 +921,7 @@ export default function Addcar() {
                 </div>
 
                 {/* Battery Range */}
-                <div>
+                {/* <div>
                   <label className="block mb-2 text-sm font-medium text-gray-700">Battery Range</label>
                   <input
                     type="text"
@@ -918,10 +930,10 @@ export default function Addcar() {
                     placeholder="Enter battery range (e.g., 300km)"
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                   />
-                </div>
+                </div> */}
 
                 {/* Charging Time */}
-                <div>
+                {/* <div>
                   <label className="block mb-2 text-sm font-medium text-gray-700">Charging Time</label>
                   <input
                     type="text"
@@ -930,19 +942,24 @@ export default function Addcar() {
                     placeholder="Enter charging time (e.g., 2 hours)"
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                   />
-                </div>
+                </div> */}
 
                 {/* Engine Power */}
                 <div>
-                  <label className="block mb-2 text-sm font-medium text-gray-700">Engine Power</label>
-                  <input
-                    type="text"
-                    value={formData.additionalInfo.enginePower}
-                    onChange={(e) => handleAdditionalInfoChange('enginePower', e.target.value)}
-                    placeholder="Enter engine power (e.g., 150hp)"
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                  />
-                </div>
+  <label className="block mb-2 text-sm font-medium text-gray-700">Engine Power</label>
+  <select
+    value={formData.additionalInfo.enginePower}
+    onChange={(e) => handleAdditionalInfoChange('enginePower', e.target.value)}
+    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none bg-white cursor-pointer"
+  >
+    <option value="">Select Engine Power</option>
+    {enginePowers.map((item: EnginePower) => (
+      <option key={item.name} value={item.name}>
+        {item.name}
+      </option>
+    ))}
+  </select>
+</div>
 
                 {/* Acceleration */}
                 <div>

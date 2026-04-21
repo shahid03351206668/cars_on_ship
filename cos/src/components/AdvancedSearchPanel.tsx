@@ -72,12 +72,12 @@ function SectionHeader({ title, open, onToggle }: { title: string; open: boolean
     <button
       type="button"
       onClick={onToggle}
-      className="flex items-center justify-between w-full py-3 text-sm font-semibold text-gray-800 border-b border-gray-100 group"
+      className="flex items-center justify-between w-full py-3 text-sm font-semibold text-gray-800 border-b border-gray-100 group hover:bg-gray-50 transition-colors"
     >
-      <span>{title}</span>
+      <span className="truncate">{title}</span>
       {open
-        ? <ChevronUp className="w-4 h-4 text-[#FC7844]" />
-        : <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-[#FC7844] transition-colors" />}
+        ? <ChevronUp className="w-4 h-4 text-[#FC7844] shrink-0 ml-2" />
+        : <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-[#FC7844] transition-colors shrink-0 ml-2" />}
     </button>
   )
 }
@@ -203,8 +203,8 @@ function SearchableSelectField({
           disabled={disabled || loading}
           className="w-full text-left bg-white border border-gray-200 text-gray-700 text-sm rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#FC7844] focus:border-[#FC7844] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-between"
         >
-          <span className={selectedLabel ? "text-gray-700" : "text-gray-400"}>{selectedLabel || placeholder}</span>
-          <div className="flex items-center gap-1">
+          <span className={`truncate ${selectedLabel ? "text-gray-700" : "text-gray-400"}`}>{selectedLabel || placeholder}</span>
+          <div className="flex items-center gap-1 shrink-0 ml-2">
             {value && (
               <button
                 type="button"
@@ -220,9 +220,9 @@ function SearchableSelectField({
         </button>
 
         {isOpen && (
-          <div className="absolute left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-md shadow-lg top-full">
+          <div className="absolute left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-md shadow-lg top-full max-h-48 flex flex-col">
             {/* Search Input */}
-            <div className="p-2 border-b border-gray-100">
+            <div className="p-2 border-b border-gray-100 shrink-0">
               <input
                 ref={inputRef}
                 type="text"
@@ -234,7 +234,7 @@ function SearchableSelectField({
             </div>
 
             {/* Options List */}
-            <div className="overflow-y-auto max-h-48">
+            <div className="overflow-y-auto flex-1 min-h-0">
               {loading ? (
                 <div className="p-3 text-sm text-center text-gray-500">Loading...</div>
               ) : filteredOptions.length === 0 ? (
@@ -319,15 +319,18 @@ function CheckboxGroup({
 }) {
   if (loading) {
     return (
-      <div className={`grid gap-2 mt-3 ${cols === 2 ? "grid-cols-2" : cols === 3 ? "grid-cols-3" : "grid-cols-4"}`}>
+      <div className={`grid gap-2 mt-3 grid-cols-2 sm:grid-cols-2 lg:grid-cols-${cols}`}>
         {[...Array(6)].map((_, i) => (
           <div key={i} className="h-6 bg-gray-100 rounded animate-pulse" />
         ))}
       </div>
     )
   }
+  
+  const colsClass = cols === 2 ? "grid-cols-2" : cols === 3 ? "grid-cols-3" : "grid-cols-4"
+  
   return (
-    <div className={`grid gap-x-4 gap-y-2 mt-3 ${cols === 2 ? "grid-cols-2" : cols === 3 ? "grid-cols-3" : "grid-cols-4"}`}>
+    <div className={`grid gap-x-4 gap-y-2 mt-3 ${colsClass}`}>
       {items.map((item) => {
         const checked = selected.includes(item.value)
         return (
@@ -383,7 +386,7 @@ function ColourSwatches({
             type="button"
             onClick={() => onToggle(c.name)}
             title={c.name}
-            className={`relative w-8 h-8 rounded-full border-2 transition-all ${
+            className={`relative w-8 h-8 rounded-full border-2 transition-all shrink-0 ${
               isSelected ? "border-[#FC7844] scale-110 shadow-md" : "border-transparent hover:border-gray-300"
             }`}
             style={{ backgroundColor: c.color_code || "#ccc" }}
@@ -420,7 +423,7 @@ function RangeRow({
   return (
     <div className="mt-3">
       <p className="mb-1.5 text-[10px] font-medium text-gray-400 uppercase tracking-wide">{label}</p>
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <SelectField value={fromValue} onChange={onFromChange} placeholder={fromPlaceholder} options={fromOptions} />
         <SelectField value={toValue} onChange={onToChange} placeholder={toPlaceholder} options={toOptions} />
       </div>
@@ -444,7 +447,7 @@ function DateRangeRow({
   return (
     <div className="mt-3">
       <p className="mb-1.5 text-[10px] font-medium text-gray-400 uppercase tracking-wide">{label}</p>
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <DateField value={fromValue} onChange={onFromChange} placeholder={fromPlaceholder} />
         <DateField value={toValue} onChange={onToChange} placeholder={toPlaceholder} />
       </div>
@@ -553,27 +556,28 @@ export default function AdvancedSearchPanel({ onSearch, onClose }: Props) {
   }, 0)
 
   return (
-    <div className="overflow-hidden bg-white border border-gray-100 shadow-2xl rounded-xl">
+    <div className="flex flex-col h-screen max-h-[100dvh] bg-white border border-gray-100 shadow-2xl rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-3.5 bg-[#212123]">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-white">Advanced Search</span>
+      <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-3.5 bg-[#212123] shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-xs sm:text-sm font-bold text-white truncate">Advanced Search</span>
           {activeCount > 0 && (
-            <span className="bg-[#FC7844] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+            <span className="bg-[#FC7844] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
               {activeCount}
             </span>
           )}
         </div>
-        <button onClick={onClose} className="text-gray-400 transition-colors hover:text-white">
+        <button onClick={onClose} className="text-gray-400 transition-colors hover:text-white shrink-0 ml-2">
           <X className="w-4 h-4" />
         </button>
       </div>
 
-      <div className="px-5 py-4 space-y-1 max-h-[75vh] overflow-y-auto">
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-5 py-4 space-y-1">
 
         {/* Make & Model */}
         <Section title="Make & Model">
-          <div className="flex gap-2 mt-3">
+          <div className="flex flex-col sm:flex-row gap-2 mt-3">
             <SearchableSelectField
               label="Make"
               value={filters.make}
@@ -656,7 +660,7 @@ export default function AdvancedSearchPanel({ onSearch, onClose }: Props) {
 
         {/* Port Range */}
         <Section title="Port">
-          <div className="flex gap-2 mt-3">
+          <div className="flex flex-col sm:flex-row gap-2 mt-3">
             <SearchableSelectField
               label="From Port"
               value={filters.fromPort}
@@ -747,7 +751,7 @@ export default function AdvancedSearchPanel({ onSearch, onClose }: Props) {
           {filters.colours.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
               {filters.colours.map((c) => (
-                <span key={c} className="inline-flex items-center gap-1 px-2 py-0.5 bg-orange-50 text-[#FC7844] text-xs rounded-full border border-orange-200">
+                <span key={c} className="inline-flex items-center gap-1 px-2 py-0.5 bg-orange-50 text-[#FC7844] text-xs rounded-full border border-orange-200 shrink-0">
                   {c}
                   <button onClick={() => toggleMulti("colours", c)} className="hover:opacity-70">
                     <X className="w-2.5 h-2.5" />
@@ -837,26 +841,26 @@ export default function AdvancedSearchPanel({ onSearch, onClose }: Props) {
 
       </div>
 
-      {/* Footer actions */}
-      <div className="flex items-center gap-2 px-5 py-3.5 border-t border-gray-100 bg-gray-50">
+      {/* Footer actions - Fixed at bottom */}
+      <div className="flex items-center gap-2 px-4 sm:px-5 py-3 sm:py-3.5 border-t border-gray-100 bg-gray-50 shrink-0">
         <Button
           variant="outline"
           size="sm"
           onClick={reset}
-          className="flex items-center gap-1.5 text-xs border-gray-200 text-gray-500 hover:text-[#FC7844] hover:border-[#FC7844]"
+          className="flex items-center gap-1 sm:gap-1.5 text-xs border-gray-200 text-gray-500 hover:text-[#FC7844] hover:border-[#FC7844] px-2 sm:px-3"
         >
-          <RotateCcw className="w-3.5 h-3.5" />
-          Reset
+          <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+          <span className="hidden sm:inline">Reset</span>
         </Button>
         <Button
           size="sm"
           onClick={() => onSearch(filters)}
-          className="flex-1 flex items-center justify-center gap-1.5 bg-[#FC7844] hover:bg-[#e86a35] text-white text-xs"
+          className="flex-1 flex items-center justify-center gap-1 sm:gap-1.5 bg-[#FC7844] hover:bg-[#e86a35] text-white text-xs px-2 sm:px-3"
         >
-          <Search className="w-3.5 h-3.5" />
-          Apply Filters
+          <Search className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">Apply</span>
           {activeCount > 0 && (
-            <span className="bg-white/20 text-white text-[10px] px-1 rounded">{activeCount}</span>
+            <span className="bg-white/20 text-white text-[10px] px-1 rounded shrink-0">{activeCount}</span>
           )}
         </Button>
       </div>

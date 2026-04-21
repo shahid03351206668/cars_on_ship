@@ -333,9 +333,13 @@ const CarCard = ({ car }: { car: Ad }) => {
     navigate(`/cars/${car.name}`);
   };
 
-  const images = car.images?.length
+  const allImages = car.images?.length
     ? car.images
     : ["https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=400&q=80"];
+
+  // Limit images to show only up to 3 in the carousel
+  const displayImages = allImages.slice(0, 3);
+  const hasMoreImages = allImages.length > 3;
 
   return (
     <div className="overflow-hidden transition-all duration-200 bg-white border border-gray-100 rounded-xl hover:shadow-lg group">
@@ -345,8 +349,8 @@ const CarCard = ({ car }: { car: Ad }) => {
       <div className="relative overflow-hidden group/carousel">
         <Carousel setApi={setApi} className="w-full">
           <CarouselContent>
-            {images.map((src, index) => (
-              <CarouselItem key={index}>
+            {displayImages.map((src, index) => (
+              <CarouselItem key={index} className="relative">
                 <img
                   src={src}
                   alt={`${car.make} ${car.model}`}
@@ -357,12 +361,26 @@ const CarCard = ({ car }: { car: Ad }) => {
                       "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=400&q=80";
                   }}
                 />
+                
+                {/* Show "More" overlay only on the 3rd image if there are more than 3 total */}
+                {hasMoreImages && index === 2 && (
+                  <div 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCardClick();
+                    }}
+                    className="absolute inset-0 z-20 flex flex-col items-center justify-center cursor-pointer bg-black/50 hover:bg-black/40 transition-colors"
+                  >
+                    <span className="text-white font-bold text-lg">+{allImages.length - 2}</span>
+                    <span className="text-white text-xs font-medium uppercase tracking-tighter">Show More</span>
+                  </div>
+                )}
               </CarouselItem>
             ))}
           </CarouselContent>
 
           {/* Navigation Arrows - Styled to float over the image like Airbnb cards */}
-          {images.length > 1 && (
+          {displayImages.length > 1 && (
             <>
               <CarouselPrevious className="absolute w-8 h-8 transition-opacity -translate-y-1/2 opacity-0 left-2 top-1/2 bg-white/80 backdrop-blur-sm group-hover/carousel:opacity-100" />
               <CarouselNext className="absolute w-8 h-8 transition-opacity -translate-y-1/2 opacity-0 right-2 top-1/2 bg-white/80 backdrop-blur-sm group-hover/carousel:opacity-100" />
@@ -372,7 +390,7 @@ const CarCard = ({ car }: { car: Ad }) => {
 
         {/* Image count tag */}
         <span className="absolute z-10 top-2 right-2 bg-[#212123]/80 text-white text-xs px-2 py-0.5 rounded pointer-events-none">
-          {current + 1}/{images.length}
+          {current + 1}/{displayImages.length}
         </span>
 
         {/* Wishlist */}
@@ -391,9 +409,9 @@ const CarCard = ({ car }: { car: Ad }) => {
         </button>
 
         {/* Dot indicators */}
-        {images.length > 1 && (
+        {displayImages.length > 1 && (
           <div className="absolute z-10 flex gap-1 -translate-x-1/2 bottom-2 left-1/2">
-            {images.map((_, i) => (
+            {displayImages.map((_, i) => (
               <button
                 key={i}
                 onClick={(e) => {
@@ -447,6 +465,12 @@ const CarsSection = ({ filters }: CarsSectionProps) => {
   const [gridCols] = useState(3);
   // const { data: ads, isLoading, isError } = useAds();
   const { data: ads, isLoading, isError } = useAds(filters); // ← pass filters
+  const [currentPage, setCurrentPage] = useState(1);
+  // Calculate items per page: 4 rows multiplied by the current grid columns
+  const itemsPerPage = (typeof gridCols !== 'undefined' ? gridCols : 3) * 4; 
+  const totalPages = ads?.length ? Math.ceil(ads.length / itemsPerPage) : 0;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentAds = ads?.slice(startIndex, startIndex + itemsPerPage) || [];
 
   return (
     <section className="bg-[#212123] py-14 px-4">
@@ -527,7 +551,7 @@ const CarsSection = ({ filters }: CarsSectionProps) => {
           <p className="py-10 text-center text-gray-400">No cars available.</p>
         )}
 
-        {!isLoading && !isError && ads && ads.length > 0 && (
+        {!isLoading && !isError && currentAds && currentAds.length > 0 && (
           <div
             className={`grid gap-5 ${
               gridCols === 2
@@ -537,33 +561,47 @@ const CarsSection = ({ filters }: CarsSectionProps) => {
                 : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
             }`}
           >
-            {ads.map((car) => (
+            {/* Changed from ads.map to currentAds.map */}
+            {currentAds.map((car) => (
               <CarCard key={car.name} car={car} />
             ))}
           </div>
         )}
 
-        {/* Pagination */}
-        <div className="flex items-center justify-center gap-2 mt-10">
-          <button className="flex items-center justify-center w-8 h-8 text-gray-400 transition-colors border rounded border-white/20 hover:border-white/40 hover:text-white">
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          {[1, 2, 3, 4, 5].map((p) => (
-            <button
-              key={p}
-              className={`w-8 h-8 text-sm rounded border transition-colors ${
-                p === 1
-                  ? "bg-[#FC7844] border-[#FC7844] text-white font-bold"
-                  : "border-white/20 text-gray-400 hover:border-white/40 hover:text-white"
-              }`}
+        {/* Pagination - Updated to be dynamic */}
+        {!isLoading && !isError && totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-10">
+            <button 
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="flex items-center justify-center w-8 h-8 text-gray-400 transition-colors border rounded border-white/20 hover:border-white/40 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
             >
-              {p}
+              <ChevronLeft className="w-4 h-4" />
             </button>
-          ))}
-          <button className="flex items-center justify-center w-8 h-8 text-gray-400 transition-colors border rounded border-white/20 hover:border-white/40 hover:text-white">
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
+            
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+              <button
+                key={p}
+                onClick={() => setCurrentPage(p)}
+                className={`w-8 h-8 text-sm rounded border transition-colors ${
+                  p === currentPage
+                    ? "bg-[#FC7844] border-[#FC7844] text-white font-bold"
+                    : "border-white/20 text-gray-400 hover:border-white/40 hover:text-white"
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+            
+            <button 
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="flex items-center justify-center w-8 h-8 text-gray-400 transition-colors border rounded border-white/20 hover:border-white/40 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );
